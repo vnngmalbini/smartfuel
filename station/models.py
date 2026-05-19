@@ -129,6 +129,21 @@ class Customer(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.phone}"
 
+    @property
+    def display_name(self):
+        """User-friendly display name for templates.
+
+        Prefer a real name when available. If the record was created by
+        Paystack (first_name set to 'Paystack'), fall back to email or phone
+        so listings look meaningful instead of showing "Paystack 233...".
+        """
+        full = f"{(self.first_name or '').strip()} {(self.last_name or '').strip()}".strip()
+        if full and not full.lower().startswith('paystack'):
+            return full
+        if self.email:
+            return self.email
+        return self.phone
+
 
 class LoyaltyTier(models.Model):
     """Loyalty/Rewards tiers"""

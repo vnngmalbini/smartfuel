@@ -21,7 +21,7 @@
             <tbody>
                 {% for customer in customers %}
                 <tr style="border-top: 1px solid #e5e7eb;">
-                    <td style="padding: 0.75rem;">{{ customer.first_name }} {{ customer.last_name }}</td>
+                    <td style="padding: 0.75rem;">{{ customer.display_name }}</td>
                     <td style="padding: 0.75rem;">{{ customer.phone }}</td>
                     <td style="padding: 0.75rem;">{{ customer.email|default:'-' }}</td>
                     <td style="padding: 0.75rem;">GH₵{{ customer.total_purchases|floatformat:2 }}</td>
