@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Payment Failed | FuelSync</title>
+	<style>
+		:root{--primary:#0D47A1;--accent:#1565C0;--bg:#F8F9FB;--panel:#FFFFFF;--panel-border:#E2E8F0;--text:#1A202C;--muted:#718096;--shadow:0 4px 12px rgba(0,0,0,0.12);--primary-light:#1565C0;--primary-dark:#0A3A7D;--accent-light:#64B5F6;--accent-dark:#0D47A1;--light-accent:#EAF3FF}
+		*{box-sizing:border-box}
+        body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);padding:24px;max-width:600px;margin-left:auto;margin-right:auto}
+		.card{width:min(520px,100%);background:var(--panel);border:1px solid var(--panel-border);padding:36px;border-radius:16px;box-shadow:var(--shadow);text-align:center}
+		h1{margin:0 0 12px;color:var(--alert);font-size:2rem}
+		p{color:var(--muted);line-height:1.6;margin:0 0 18px}
+		.error{background:#FEF2F2;border-left:4px solid #EF4444;padding:14px;border-radius:10px;text-align:left;color:#7F1D1D;margin:18px 0}
+		a{display:inline-block;margin-top:8px;color:var(--primary);text-decoration:none;font-weight:600}
+	</style>
+</head>
+<body>
+	<div class="card">
+		<h1>Payment Failed</h1>
+		<div class="error">{{ error|default:"We could not complete the payment." }}</div>
+		<p>Please try again or return to the home page to start over.</p>
+		<a href="/home/">Return Home</a>
+	</div>
+</body>
+</html>

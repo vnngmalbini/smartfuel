@@ -1,0 +1,12 @@
+﻿from station.models import Transaction, Payment
+tx = Transaction.objects.get(id=11)
+has_p = hasattr(tx, 'payment')
+p_ref = Payment.objects.filter(reference=tx.reference_number)
+print(f'ID: {tx.id}')
+print(f'Ref: {tx.reference_number}')
+print(f'Method: {tx.payment_method}')
+print(f'Status: {tx.status}')
+print(f'Amount: {tx.total_amount}')
+print(f'Liters: {tx.liters_dispensed}')
+print(f'HasPaymentRel: {has_p}')
+print(f'SameRefPayments: count={p_ref.count()}, IDs={list(p_ref.values_list("id", flat=True))}')

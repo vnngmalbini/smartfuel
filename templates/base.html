@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Smart Fuel Station Management System">
+    <title>{% block title %}FuelSync - Fuel Station Management{% endblock %}</title>
+    
+    <!-- Stylesheets -->
+    {% load static %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/fuelsync-core.css' %}?v=20260504a">
+    <link rel="stylesheet" href="{% static 'css/smartfuel-modern.css' %}?v=20260504a">
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        :root {
+            --primary-navy: #1a3a52;
+            --primary-blue: #2c5aa0;
+            --secondary-green: #2ecc71;
+            --accent-orange: #f39c12;
+        }
+    </style>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <a href="{% url 'root' %}" class="brand-logo">
+                    <i class="bi bi-fuel-pump"></i> <span>FuelSync</span>
+                </a>
+            </div>
+            
+            <div class="navbar-menu">
+                {% if user.is_authenticated %}
+                    <div class="nav-links">
+                        <a href="{% url 'dashboard' %}" class="nav-link">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                        <a href="{% url 'buy' %}" class="nav-link">
+                            <i class="bi bi-fuel-pump-fill"></i> Buy Fuel
+                        </a>
+                        <a href="{% url 'root' %}" class="nav-link">
+                            <i class="bi bi-house-fill"></i> Home
+                        </a>
+                        {% if user.is_staff %}
+                            <a href="{% url 'admin:index' %}" class="nav-link">
+                                <i class="bi bi-gear-fill"></i> Admin
+                            </a>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="nav-user">
+                        <div class="dropdown">
+                            <button class="btn-user" id="userDropdown">
+                                {% if user.dashboard_profile.profile_picture %}
+                                    <img src="{{ user.dashboard_profile.profile_picture.url }}" alt="Profile" class="nav-avatar">
+                                {% else %}
+                                    <i class="bi bi-person-circle"></i>
+                                {% endif %}
+                                {% if user.first_name or user.last_name %}
+                                    <span>{{ user.get_full_name }}</span>
+                                {% else %}
+                                    <span id="navUserName">{{ user.username }}</span>
+                                {% endif %}
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-menu" id="userDropdownMenu">
+                                <a href="{% url 'profile' %}" class="dropdown-item">
+                                    <i class="bi bi-person"></i> Profile
+                                </a>
+                                <a href="{% url 'settings' %}" class="dropdown-item">
+                                    <i class="bi bi-gear"></i> Settings
+                                </a>
+                                <hr class="dropdown-divider">
+                                <form method="POST" action="{% url 'logout' %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item" style="width: 100%; text-align: left;">
+                                        <i class="bi bi-box-arrow-left"></i> Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="nav-auth">
+                        <a href="{% url 'login' %}" class="btn btn-outline btn-sm">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </a>
+                        <a href="{% url 'signup' %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-person-plus"></i> Register
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <button class="navbar-toggle" id="navbarToggle">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Messages/Alerts -->
+    {% if messages %}
+        <div class="alerts-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} animate-slideInDown">
+                    <i class="bi {% if message.tags == 'success' %}bi-check-circle{% elif message.tags == 'error' %}bi-exclamation-circle{% else %}bi-info-circle{% endif %}"></i>
+                    <span>{{ message }}</span>
+                    <button class="alert-close" onclick="this.parentElement.style.display='none';">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h4>FuelSync</h4>
+                <p>Modern fuel station management system for efficient operations.</p>
+                <div class="social-links">
+                    <a href="#" title="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="#" title="Twitter"><i class="bi bi-twitter"></i></a>
+                    <a href="#" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    <a href="https://wa.me/233535022447" title="WhatsApp" target="_blank" rel="noopener noreferrer"><i class="bi bi-whatsapp"></i></a>
+                    <a href="https://instagram.com/fuelsync" title="Instagram" target="_blank" rel="noopener noreferrer"><i class="bi bi-instagram"></i></a>
+                </div>
+            </div>
+            
+                <div class="footer-section">
+                <h5>Quick Links</h5>
+                <ul>
+                    <li><a href="{% url 'root' %}">Home</a></li>
+                    <li><a href="{% url 'about' %}">About</a></li>
+                    <li><a href="{% url 'how_it_works' %}">Services</a></li>
+                    <li><a href="{% url 'contact' %}">Contact</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h5>Support</h5>
+                <ul>
+                    <li><a href="#" onclick="return false;">Help Center</a></li>
+                    <li><a href="#" onclick="return false;">Documentation</a></li>
+                    <li><a href="#" onclick="return false;">API Docs</a></li>
+                    <li><a href="#" onclick="return false;">Privacy Policy</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h5>Contact Us</h5>
+                <p><i class="bi bi-envelope"></i> support@fuelsync.com</p>
+                <p><i class="bi bi-telephone"></i> +233 535022447</p>
+                <p><i class="bi bi-geo-alt"></i> 123 Fuel Station Way, City, Country</p>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2024 FuelSync. All rights reserved. | <a href="#">Terms of Service</a> | <a href="#">Privacy Policy</a></p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // Mobile menu toggle
+        document.getElementById('navbarToggle')?.addEventListener('click', function() {
+            const menu = document.querySelector('.navbar-menu');
+            menu.classList.toggle('active');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.querySelector('.dropdown');
+            if (dropdown && !dropdown.contains(event.target)) {
+                document.getElementById('userDropdownMenu')?.classList.remove('active');
+            }
+        });
+
+        // Toggle user dropdown
+        document.getElementById('userDropdown')?.addEventListener('click', function() {
+            const menu = document.getElementById('userDropdownMenu');
+            menu.classList.toggle('active');
+        });
+
+        // Display usernames like first.last as first last
+        const navUserName = document.getElementById('navUserName');
+        if (navUserName) {
+            navUserName.textContent = navUserName.textContent.replace(/\./g, ' ');
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

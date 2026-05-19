@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Start Fuel Sale - FuelSync{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container {
+        padding: 2rem 0;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+    
+    .pump-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .pump-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .pump-card:hover {
+        border-color: #2ecc71;
+        box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .pump-card.inactive {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    
+    .pump-number {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #1a3a52;
+        margin-bottom: 0.5rem;
+    }
+    
+    .pump-fuel-type {
+        font-size: 1rem;
+        color: #2ecc71;
+        margin-bottom: 0.5rem;
+    }
+    
+    .pump-status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: #e8f5e9;
+        color: #2e7d32;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .pump-card.inactive .pump-status {
+        background: #ffebee;
+        color: #c62828;
+    }
+    
+    .pump-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .back-button {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        background: #95a5a6;
+        color: white;
+        border-radius: 4px;
+        text-decoration: none;
+        margin-bottom: 2rem;
+    }
+    
+    .back-button:hover {
+        background: #7f8c8d;
+        color: white;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <a href="{% url 'attendant_dashboard' %}" class="back-button">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+    
+    <div class="page-header">
+        <h1><i class="bi bi-fuel-pump-fill"></i> Select a Pump</h1>
+        <p>Choose an operational pump to begin fuel sale</p>
+    </div>
+    
+    {% if pumps %}
+    <div class="pump-grid">
+        {% for pump in pumps %}
+        <a href="{% url 'fuel_sale_form' pump.id %}" class="pump-card">
+            <div class="pump-icon">⛽</div>
+            <div class="pump-number">{{ pump.pump_number }}</div>
+            <div class="pump-fuel-type">{{ pump.fuel_type.get_name_display }}</div>
+            <div class="pump-status">
+                <i class="bi bi-check-circle-fill"></i> Operational
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 3rem; text-align: center; color: #999;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📛</div>
+        <h2 style="color: #333; margin-bottom: 0.5rem;">No Operational Pumps Available</h2>
+        <p>Please contact your manager. All pumps may be under maintenance.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

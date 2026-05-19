@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <style>
+        :root {
+            --primary: #0D47A1;
+            --primary-dark: #0A3A7D;
+            --accent: #FF7A00;
+            --bg: #F8F9FB;
+            --text: #1A202C;
+            --muted: #718096;
+            --panel: #FFFFFF;
+            --panel-border: #E2E8F0;
+            --shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+            --gradient-primary: linear-gradient(135deg, #0B2D5C 0%, #0D47A1 48%, #1565C0 100%);
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); }
+        header { background: var(--panel); border-bottom: 1px solid var(--panel-border); box-shadow: 0 4px 12px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 10; }
+        nav { max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 74px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: var(--primary); font-weight: 800; }
+        .logo-mark { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; color: #fff; background: var(--gradient-primary); }
+        .nav-links { display: flex; gap: 14px; flex-wrap: wrap; }
+        .nav-links a, .nav-links .active { text-decoration: none; color: var(--text); padding: 10px 14px; border-radius: 999px; border: 1px solid var(--panel-border); background: #fff; font-weight: 700; font-size: 0.95rem; }
+        .nav-links .active { background: rgba(13,71,161,0.08); border-color: rgba(13,71,161,0.16); color: var(--primary); }
+        main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 72px; }
+        .hero { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 22px; box-shadow: var(--shadow); padding: 32px; }
+        .tag { display: inline-flex; margin-bottom: 14px; padding: 7px 12px; border-radius: 999px; background: rgba(255,122,0,0.10); color: #C24A00; border: 1px solid rgba(255,122,0,0.18); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
+        h1 { margin: 0 0 12px; font-size: clamp(2rem, 4vw, 3.3rem); line-height: 1.08; }
+        .summary { margin: 0; max-width: 70ch; color: var(--muted); line-height: 1.7; font-size: 1.02rem; }
+        .steps { display: grid; gap: 18px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 24px; }
+        .step { background: #fff; border: 1px solid var(--panel-border); border-radius: 18px; padding: 22px; box-shadow: 0 10px 24px rgba(16,24,40,0.06); }
+        .step span { display: inline-flex; width: 32px; height: 32px; border-radius: 999px; align-items: center; justify-content: center; background: rgba(13,71,161,0.12); color: var(--primary); font-weight: 900; margin-bottom: 12px; }
+        .step strong { display: block; margin-bottom: 8px; font-size: 1.1rem; }
+        .step p { margin: 0; color: var(--muted); line-height: 1.7; }
+        .panel { margin-top: 22px; background: #fff; border: 1px solid var(--panel-border); border-radius: 18px; padding: 24px; box-shadow: 0 10px 24px rgba(16,24,40,0.06); }
+        .panel h2 { margin-top: 0; }
+        .panel p { color: var(--muted); line-height: 1.7; }
+        .back { display: inline-flex; margin-top: 18px; text-decoration: none; color: #fff; background: var(--gradient-primary); padding: 11px 16px; border-radius: 12px; font-weight: 800; box-shadow: 0 10px 22px rgba(13,71,161,0.18); }
+        @media (max-width: 900px) { .steps { grid-template-columns: 1fr; } nav { height: auto; padding: 18px 20px; gap: 16px; flex-direction: column; align-items: flex-start; } }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="/home/" class="logo"><span class="logo-mark">⛽</span>FuelSync</a>
+        <div class="nav-links">
+            <a href="/about/">About</a>
+            <span class="active">How it works</span>
+            <a href="/contact/">Contact</a>
+        </div>
+    </nav>
+</header>
+<main>
+    <section class="hero">
+        <span class="tag">How it works</span>
+        <h1>{{ page_heading }}</h1>
+        <p class="summary">{{ page_summary }}</p>
+        <div class="steps">
+            <div class="step">
+                <span>1</span>
+                <strong>Select fuel and amount</strong>
+                <p>Choose the fuel type and enter the amount you want to buy. The system calculates the litres for you.</p>
+            </div>
+            <div class="step">
+                <span>2</span>
+                <strong>Pay securely</strong>
+                <p>Complete payment through Paystack using a secure checkout that supports mobile money and card flows.</p>
+            </div>
+            <div class="step">
+                <span>3</span>
+                <strong>Receive your receipt</strong>
+                <p>After payment, you can verify the transaction and keep a digital receipt for your records.</p>
+            </div>
+        </div>
+        <div class="panel">
+            <h2>Recommended workflow</h2>
+            <p>For the smoothest experience, start on the Buy Fuel page, finish the Paystack checkout, and then use the receipt page to confirm or reprint a transaction.</p>
+            <a class="back" href="/buy/">Start a Fuel Order</a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

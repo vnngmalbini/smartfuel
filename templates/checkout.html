@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Payment | FuelSync</title>
+    <style>
+        :root {
+            --primary: #0D47A1;
+            --primary-light: #1565C0;
+            --primary-dark: #0A3A7D;
+            --accent: #1565C0;
+            --accent-light: #64B5F6;
+            --accent-dark: #0D47A1;
+            --success: #4CAF50;
+            --danger: #EF4444;
+            --bg: #F8F9FB;
+            --panel: #FFFFFF;
+            --panel-border: #E2E8F0;
+            --text: #1A202C;
+            --text-muted: #718096;
+            --muted: #718096;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.15);
+            --shadow: var(--shadow-md);
+            --light-accent: #EAF3FF;
+            --gradient-primary: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+            --gradient-accent: linear-gradient(135deg, #0D47A1 0%, #1565C0 100%);
+        }
+
+        * { box-sizing: border-box; }
+
+        :root {
+            --primary: #0D47A1;
+            --primary-light: #1565C0;
+            --primary-dark: #0A3A7D;
+            --accent: #1565C0;
+            --accent-light: #64B5F6;
+            --accent-dark: #0D47A1;
+            --bg: #F8F9FB;
+            --panel: #FFFFFF;
+            --panel-border: #E2E8F0;
+            --text: #1A202C;
+            --muted: #718096;
+            --success: #4CAF50;
+            --danger: #B42318;
+            --shadow: 0 4px 12px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+            --shadow-lg: 0 10px 28px rgba(0,0,0,0.15);
+            --light-accent: #EAF3FF;
+            --gradient-primary: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+            --gradient-accent: linear-gradient(135deg, #0D47A1 0%, #1565C0 100%);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .container {
+            background: var(--panel);
+            padding: 28px;
+            border-radius: 16px;
+            border: 1px solid var(--panel-border);
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h2 {
+            margin: 0 0 12px;
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+
+        .amount {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 12px 0 24px;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin: 18px 0 10px;
+        }
+
+        .qr-section h4 {
+            margin: 0 0 12px;
+            color: var(--text);
+        }
+
+        .qr-section img {
+            width: 250px;
+            max-width: 100%;
+            border-radius: 10px;
+            border: 1px solid var(--panel-border);
+            background: white;
+            padding: 8px;
+        }
+
+        .qr-link {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 10px 16px;
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .qr-link:hover {
+            background: var(--primary-dark);
+        }
+
+        .qr-link.secondary {
+            margin-left: 8px;
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid rgba(13, 71, 161, 0.2);
+        }
+
+        .qr-link.secondary:hover {
+            background: rgba(13, 71, 161, 0.06);
+        }
+
+        .step {
+            display: none;
+            margin: 18px 0;
+            text-align: left;
+        }
+
+        .step.active { display: block; }
+
+        .step h3 {
+            margin: 0;
+            color: var(--text);
+            font-size: 1.05rem;
+        }
+
+        .step-actions {
+            display: grid;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        button {
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 18px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .pay-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .pay-btn:hover {
+            box-shadow: 0 10px 24px rgba(13, 71, 161, 0.18);
+            transform: translateY(-1px);
+        }
+
+        .cancel-btn {
+            background: #FEE2E2;
+            color: var(--danger);
+            border: 1px solid #FECACA;
+        }
+
+        .cancel-btn:hover {
+            background: #FECACA;
+        }
+
+        .status {
+            margin-top: 16px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .status.success { color: var(--success); }
+        .status.error { color: var(--danger); }
+        .status.pending { color: var(--accent); }
+
+        .spinner {
+            display: none;
+            border: 4px solid #E5EEF8;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .step-card {
+            background: #FAFBFC;
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .step-card p {
+            margin: 8px 0;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .note {
+            background: #FFF7ED;
+            padding: 12px 14px;
+            border-radius: 10px;
+            color: #9A3412;
+            border: 1px solid #FED7AA;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 16px; }
+            .container { padding: 24px; }
+            .amount { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Complete Your Payment</h2>
+        <div class="amount">GHS {{ amount|floatformat:2 }}</div>
+        <div class="qr-section">
+            <h4>Or scan QR to pay</h4>
+            {% if qr_code_image %}
+            <img src="{{ qr_code_image }}" alt="QR Code">
+            <p>
+                <a href="{{ authorization_url }}" target="_blank" class="qr-link">Open Paystack Checkout</a>
+                <a href="/payment/qr/?amount={{ amount }}&phone={{ phone|urlencode }}&liters={{ liters|urlencode }}&fuel_type={{ fuel_type|urlencode }}" class="qr-link secondary">Open QR Page</a>
+            </p>
+            {% else %}
+            <p>QR not available</p>
+            {% endif %}
+        </div>
+
+        <div class="step active" id="step1">
+            <h3>Click Pay to start payment</h3>
+            <div class="step-actions">
+                <button class="pay-btn" onclick="payWithPaystack()">Pay Now</button>
+                <button class="cancel-btn" onclick="cancelPayment()">Cancel</button>
+            </div>
+        </div>
+
+        <div class="step" id="step3">
+            <h3>Payment Verification</h3>
+            <div class="spinner" id="spinner3"></div>
+            <div class="status" id="status3"></div>
+        </div>
+    </div>
+
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <script>
+        let verificationAttempts = 0;
+        const maxAttempts = 20;
+        let paymentWindowOpen = false;
+
+        function payWithPaystack() {
+            console.log('Payment initiated');
+            paymentWindowOpen = true;
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step3').classList.add('active');
+            document.getElementById('spinner3').style.display = 'block';
+            document.getElementById('status3').textContent = 'Opening payment interface...';
+            document.getElementById('status3').className = 'status pending';
+            
+                // If the customer is on a mobile device, open the Paystack `authorization_url`
+                // in a new tab/window as a fallback to trigger mobile-money prompts reliably.
+                // Opening here is allowed because this function runs on a user click.
+                const authUrlFallback = '{{ authorization_url }}';
+                const isMobile = /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+
+                if (isMobile && authUrlFallback) {
+                    try {
+                        window.open(authUrlFallback, '_blank');
+                        console.log('Opened Paystack authorization_url in new tab/window for mobile fallback');
+                    } catch (e) {
+                        console.log('Could not open authorization_url automatically:', e);
+                    }
+                }
+
+                const handler = PaystackPop.setup({
+                key: '{{ public_key }}',
+                email: '{{ email }}',
+                amount: parseInt('{{ amount_in_pesewas|default:"0" }}', 10),
+                ref: '{{ reference }}',
+                phone: '{{ phone }}',
+                channels: ['mobile_money'],
+                currency: 'GHS',
+                label: 'FuelSync Payment',
+                metadata: {
+                    phone: '{{ phone }}',
+                    phone_display: '{{ phone_display }}',
+                    liters: '{{ liters|default:"" }}',
+                    fuel_type: '{{ fuel_type|default:"" }}'
+                },
+                onClose: function() {
+                    console.log('Payment window closed');
+                    paymentWindowOpen = false;
+                    document.getElementById('status3').textContent = 'Payment window closed. Checking transaction status...';
+                    document.getElementById('status3').className = 'status pending';
+                    
+                    verifyPaymentStatus('{{ reference }}');
+                },
+                callback: function(response) {
+                    console.log('Payment callback:', response);
+                    paymentWindowOpen = false;
+                    document.getElementById('status3').textContent = 'Payment successful! Processing...';
+                    document.getElementById('status3').className = 'status success';
+                    
+                    verifyPaymentStatus('{{ reference }}');
+                }
+            });
+            handler.openIframe();
+            // Note: if the inline iframe does not trigger the mobile-money prompt,
+            // the customer can use the "Open Paystack Checkout" link or the QR code above.
+        }
+
+        function verifyPaymentStatus(reference) {
+            console.log('Verifying payment: ' + reference + ', attempt: ' + (verificationAttempts + 1));
+            
+            verificationAttempts++;
+            document.getElementById('status3').textContent = `Verifying payment (attempt ${verificationAttempts}/${maxAttempts})...`;
+            document.getElementById('status3').className = 'status pending';
+            
+            fetch('/payment/verify-api/?reference=' + encodeURIComponent(reference), {
+                headers: {
+                    'Accept': 'application/json'
+                },
+                cache: 'no-store'
+            })
+                .then(async response => {
+                    const text = await response.text();
+                    let data;
+                    try {
+                        data = JSON.parse(text);
+                    } catch (e) {
+                        throw new Error(`Non-JSON verify response (${response.status}): ${text.slice(0, 120)}`);
+                    }
+                    return data;
+                })
+                .then(data => {
+                    console.log('Verification response:', data);
+                    
+                    if (data.status) {
+                        console.log('Payment verified successfully');
+                        document.getElementById('step3').classList.add('active');
+                        document.getElementById('spinner3').style.display = 'none';
+                        document.getElementById('status3').textContent = 'Payment verified successfully! Redirecting...';
+                        document.getElementById('status3').className = 'status success';
+                        
+                        setTimeout(function() {
+                            window.location.href = '/payment/verify/?reference=' + reference;
+                        }, 1000);
+                    } else {
+                        const message = String(data.message || '').toLowerCase();
+                        const isPending = message.includes('pending') || message.includes('processing') || message.includes('queued');
+
+                        if (verificationAttempts < maxAttempts && isPending) {
+                            document.getElementById('status3').textContent = `Payment pending. Rechecking in 3s (${verificationAttempts}/${maxAttempts})...`;
+                            document.getElementById('status3').className = 'status pending';
+                            setTimeout(() => verifyPaymentStatus(reference), 3000);
+                            return;
+                        }
+
+                        console.log('Payment not verified:', data.message);
+                        document.getElementById('spinner3').style.display = 'none';
+                        document.getElementById('status3').textContent = data.message || 'Payment could not be verified right now. Try refresh later.';
+                        document.getElementById('status3').className = 'status pending';
+                    }
+                })
+                .catch(error => {
+                    console.log('Verification error:', error);
+                    if (verificationAttempts < maxAttempts) {
+                        document.getElementById('status3').textContent = `Network/verification issue. Retrying in 3s (${verificationAttempts}/${maxAttempts})...`;
+                        document.getElementById('status3').className = 'status pending';
+                        setTimeout(() => verifyPaymentStatus(reference), 3000);
+                        return;
+                    }
+
+                    document.getElementById('spinner3').style.display = 'none';
+                    document.getElementById('status3').textContent = 'Could not verify payment right now. Please refresh later.';
+                    document.getElementById('status3').className = 'status error';
+                });
+        }
+
+        function cancelPayment() {
+            if (confirm('Are you sure you want to cancel this payment?')) {
+                window.location.href = '/home/';
+            }
+        }
+    </script>
+</body>
+</html>

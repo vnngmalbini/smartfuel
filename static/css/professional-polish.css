@@ -1,0 +1,115 @@
+/* Final professional polish layer applied after core styles. */
+
+body {
+    letter-spacing: 0.01em;
+}
+
+a {
+    text-underline-offset: 2px;
+}
+
+.btn,
+button,
+[role="button"] {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.btn:hover,
+button:hover,
+[role="button"]:hover {
+    transform: translateY(-1px);
+}
+
+.page-title,
+h1,
+h2,
+h3 {
+    letter-spacing: -0.01em;
+}
+
+/* Improve perceived quality by using softer depth and borders. */
+.card,
+.box,
+.info-panel,
+.welcome-card,
+.service-card,
+.workflow-step {
+    border-color: rgba(15, 23, 36, 0.08) !important;
+    box-shadow: 0 8px 24px rgba(16, 24, 40, 0.07) !important;
+}
+
+/* Keep layout comfortable on large desktop widths. */
+@media (min-width: 1440px) {
+    .shell {
+        max-width: 1280px;
+    }
+}
+
+/* Respect reduced motion accessibility preferences. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Reusable toast notifications */
+.toast-wrap {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1200;
+    display: grid;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast {
+    min-width: 240px;
+    max-width: 360px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.92rem;
+    box-shadow: 0 10px 26px rgba(16, 24, 40, 0.22);
+    opacity: 0;
+    transform: translateY(-6px);
+    animation: toast-in 0.18s ease forwards;
+}
+
+.toast.info { background: #0d47a1; }
+.toast.success { background: #15803d; }
+.toast.error { background: #b91c1c; }
+
+@keyframes toast-in {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Reusable loading skeletons */
+.skeleton {
+    position: relative;
+    overflow: hidden;
+    background: #edf2f7;
+    border-radius: 10px;
+}
+
+.skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+    animation: skeleton-shimmer 1.2s infinite;
+}
+
+@keyframes skeleton-shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}

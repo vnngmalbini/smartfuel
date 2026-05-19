@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up FuelSync</title>
+    <link rel="stylesheet" href="{% static 'css/ui-base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fuelsync-core.css' %}">
+    <link rel="stylesheet" href="{% static 'css/professional-polish.css' %}">
+    <style>
+        :root {
+            --primary: #0D47A1;
+            --primary-light: #1565C0;
+            --primary-dark: #0A3A7D;
+            --accent: #FF7A00;
+            --accent-light: #FFB84D;
+            --accent-dark: #E66A00;
+            --success: #4CAF50;
+            --alert: #EF4444;
+                --bg: #F8F9FB;
+            --text: #1A202C;
+            --text-muted: #718096;
+            --panel: #FFFFFF;
+            --panel-border: #E2E8F0;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.15);
+            --shadow: var(--shadow-md);
+                --light-accent: #FFF4E6;
+            --gradient-primary: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+            --gradient-accent: linear-gradient(135deg, #FF7A00 0%, #FFB84D 100%);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        .shell {
+            width: min(1120px, 100%);
+            display: grid;
+            grid-template-columns: 0.95fr 1.05fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .hero,
+        .card {
+            border: 1px solid var(--panel-border);
+            background: var(--panel);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .hero {
+            padding: 42px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 620px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -35%;
+            right: -20%;
+            width: 340px;
+            height: 340px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,122,0,0.10) 0%, rgba(255,184,77,0.05) 35%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            width: fit-content;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            font-size: 1.05rem;
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.2);
+        }
+
+        h1 {
+            margin: 18px 0 12px;
+            font-size: clamp(2.4rem, 4vw, 4.2rem);
+            line-height: 0.98;
+            color: var(--text);
+        }
+
+        .hero p {
+            margin: 0;
+            max-width: 42ch;
+            color: var(--text-muted);
+            font-size: 1.02rem;
+            line-height: 1.7;
+        }
+
+        .stats {
+            display: grid;
+            gap: 14px;
+            margin-top: 28px;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+
+        .stat {
+            padding: 18px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #FFF8F1 100%);
+            border: 1px solid var(--panel-border);
+            box-shadow: 0 10px 24px rgba(13, 71, 161, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient-accent);
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+            color: var(--primary);
+        }
+
+        .stat span {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .card {
+            padding: 28px 30px;
+            align-self: start;
+        }
+
+        .card h2 {
+            margin: 0 0 8px;
+            font-size: 1.8rem;
+            color: var(--text);
+        }
+
+        .card .subtitle {
+            margin: 0 0 18px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        form {
+            display: grid;
+            gap: 14px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+
+        .input-wrap { position: relative; }
+
+        .input-group-phone {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--panel-border);
+            background: #FAFBFC;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .phone-prefix {
+            padding: 12px 14px;
+            background: #f0f2f5;
+            color: var(--text);
+            font-weight: 700;
+            border-right: 1px solid var(--panel-border);
+            white-space: nowrap;
+        }
+
+        .input-group-phone input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 12px 14px;
+            font-size: 1rem;
+            color: var(--text);
+            outline: none;
+        }
+
+        .input-group-phone input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input-group-phone:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.1);
+            background: white;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 0;
+            bottom: 0;
+            margin: auto 0;
+            background: transparent;
+            border: none;
+            padding: 0;
+            width: 36px;
+            height: 36px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            color: #6B7280;
+            flex-shrink: 0;
+            line-height: 0;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .password-toggle:focus { 
+            outline: none;
+        }
+        .password-toggle:hover {
+            color: var(--primary);
+        }
+
+        .field input {
+            width: 100%;
+            border: 1px solid var(--panel-border);
+            background: #FAFBFC;
+            color: var(--text);
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.18s ease;
+        }
+
+        .field select {
+            width: 100%;
+            border: 1px solid var(--panel-border);
+            background: #FAFBFC;
+            color: var(--text);
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.18s ease;
+            appearance: none;
+        }
+
+        .field select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.1);
+            background: white;
+        }
+
+        .field input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .field input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.1);
+            background: white;
+        }
+
+        /* Role selector styles */
+        .role-selector {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-top: 16px;
+            list-style: none;
+            padding: 0 !important;
+        }
+
+        .role-selector li {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 !important;
+            padding: 0 !important;
+            list-style: none;
+        }
+
+        .role-selector label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 22px 16px;
+            border: 2px solid #E2E8F0;
+            border-radius: 14px;
+            background: #FFFFFF;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1E2638;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            position: relative;
+        }
+
+        .role-selector label:hover {
+            border-color: #0D47A1;
+            background: linear-gradient(135deg, #F5F9FF 0%, #EBF2FF 100%);
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .role-selector input[type="radio"] {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .role-selector label.selected {
+            border-color: #0D47A1;
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+            box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1), 0 8px 16px rgba(13, 71, 161, 0.2);
+            color: #0D47A1;
+            font-weight: 700;
+        }
+
+        .role-selector label.selected::before {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            width: 22px;
+            height: 22px;
+            background: #0D47A1;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .help {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-top: 6px;
+        }
+
+        .actions {
+            display: grid;
+            gap: 12px;
+            margin-top: 6px;
+        }
+
+        .login-note {
+            margin: 2px 0 0;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .login-note a {
+            color: var(--primary);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .login-note a:hover {
+            text-decoration: underline;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        button[type='submit']:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #051F47);
+            box-shadow: 0 6px 20px rgba(13, 71, 161, 0.25);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        .button.secondary {
+            display: block;
+            padding: 12px 14px;
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .button.secondary:hover {
+            background: #F9FAFB;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* OAuth button */
+        .oauth-actions { display: grid; gap: 12px; margin-bottom: 8px; }
+        .oauth-btn {
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            color: #111827;
+            background: #fff;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 6px 16px rgba(16,24,40,0.06);
+        }
+        .oauth-btn.google:hover { background: #FBFBFB; }
+        .oauth-separator { text-align: center; color: var(--text-muted); font-size: 0.95rem; }
+
+        @media (max-width: 900px) {
+            .shell { grid-template-columns: 1fr; }
+            .hero { min-height: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+    <main class="shell">
+        <section class="hero">
+            <div>
+                <div class="brand">
+                    <div class="brand-mark">⛽</div>
+                    FuelSync
+                </div>
+                <h1>Create your account first.</h1>
+                <p>
+                    After you register, you will be sent to the login page so you can sign in and continue.
+                </p>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <strong>Registration first</strong>
+                    <span>Create an account before using the fuel purchase flow.</span>
+                </div>
+                <div class="stat">
+                    <strong>Then log in</strong>
+                    <span>Successful signup sends you to the login page.</span>
+                </div>
+                <div class="stat">
+                    <strong>Safe defaults</strong>
+                    <span>Your password and personal information are safe and securely protected on our website.</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Create account</h2>
+            <p class="subtitle">Enter your phone number and password. When you finish, we will send you to the login page.</p>
+
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if form.non_field_errors %}
+                <ul class="errors">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="field">
+                    <label for="id_first_name">First Name</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <ul class="errors" style="margin-top: 10px;">
+                            {% for error in form.first_name.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label for="id_last_name">Last Name</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <ul class="errors" style="margin-top: 10px;">
+                            {% for error in form.last_name.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label for="id_phone">Phone Number</label>
+                    <div class="input-group-phone">
+                        <span class="phone-prefix">+233</span>
+                        {{ form.phone }}
+                    </div>
+                    {% if form.phone.errors %}
+                        <ul class="errors" style="margin-top: 10px;">
+                            {% for error in form.phone.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label for="id_role">Account Role</label>
+                    {{ form.role }}
+                    <p class="help">Administrator gets full access. Manager can use the dashboard and operations, but not the admin board or cashier flow. Fuel Attendant gets cashier and fueling access.</p>
+                    {% if form.role.errors %}
+                        <ul class="errors" style="margin-top: 10px;">
+                            {% for error in form.role.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label for="id_password1">Password</label>
+                    <div class="input-wrap">
+                        {{ form.password1 }}
+                    </div>
+                    <p class="help">Use at least 8 characters and avoid common passwords.</p>
+                    {% if form.password1.errors %}
+                        <ul class="errors" style="margin-top: 10px;">
+                            {% for error in form.password1.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label for="id_password2">Confirm password</label>
+                    <div class="input-wrap">
+                        {{ form.password2 }}
+                    </div>
+                    {% if form.password2.errors %}
+                        <ul class="errors" style="margin-top: 10px;">
+                            {% for error in form.password2.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="actions">
+                    <button type="submit" id="signupSubmitBtn">Create account</button>
+                    <p class="login-note">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+                    <a class="button secondary" href="/home/">Back to Home</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const pw1 = document.getElementById('id_password1');
+    const pw2 = document.getElementById('id_password2');
+    const form = document.querySelector('form');
+    const submitBtn = document.getElementById('signupSubmitBtn');
+    const toastWrap = document.getElementById('toastWrap');
+
+    function showToast(message, tone) {
+        if (!toastWrap) return;
+        const toast = document.createElement('div');
+        toast.className = `toast ${tone || 'info'}`;
+        toast.textContent = message;
+        toastWrap.appendChild(toast);
+        window.setTimeout(() => toast.remove(), 2600);
+    }
+
+    function addToggle(pw) {
+        if (!pw) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'password-toggle';
+        btn.setAttribute('aria-label', 'Show password');
+        btn.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>`;
+
+        // append to input-wrap when available so toggle centers with input
+        const wrap = pw.parentNode;
+        if (wrap && wrap.classList && wrap.classList.contains('input-wrap')) {
+            wrap.appendChild(btn);
+        } else {
+            const field = pw.closest('.field') || pw.parentNode;
+            field.appendChild(btn);
+        }
+
+        btn.addEventListener('click', function () {
+            if (pw.type === 'password') {
+                pw.type = 'text';
+                btn.setAttribute('aria-label', 'Hide password');
+                btn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.22-5.94" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M1 1l22 22" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>`;
+            } else {
+                pw.type = 'password';
+                btn.setAttribute('aria-label', 'Show password');
+                btn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>`;
+            }
+        });
+    }
+
+    addToggle(pw1);
+    addToggle(pw2);
+
+    const roleRadios = document.querySelectorAll('.role-selector input[type="radio"]');
+    roleRadios.forEach(radio => {
+        const label = radio.closest('label');
+        if (!label) return;
+
+        if (radio.checked) {
+            label.classList.add('selected');
+        }
+
+        radio.addEventListener('change', function () {
+            roleRadios.forEach(r => {
+                const itemLabel = r.closest('label');
+                if (itemLabel) itemLabel.classList.remove('selected');
+            });
+
+            if (this.checked) {
+                label.classList.add('selected');
+            }
+        });
+    });
+
+    if (form && submitBtn) {
+        form.addEventListener('submit', function () {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating account...';
+            showToast('Creating your account...', 'info');
+        });
+    }
+
+    // Pre-select role from query parameter if available
+    const urlParams = new URLSearchParams(window.location.search);
+    const roleParam = urlParams.get('role');
+    if (roleParam) {
+        const roleInput = document.querySelector(`.role-selector input[value="${roleParam}"]`);
+        if (roleInput) {
+            roleInput.checked = true;
+            roleInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    }
+});
+</script>
+</html>

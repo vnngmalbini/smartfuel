@@ -1,0 +1,49 @@
+:root {
+    --brand-primary: #0d47a1;
+    --brand-primary-dark: #0a3a7d;
+    --brand-accent: #ff7a00;
+    --text-default: #1a202c;
+    --text-muted: #718096;
+    --surface: #ffffff;
+    --surface-border: #e2e8f0;
+    --state-success: #16a34a;
+    --state-error: #dc2626;
+    --focus-ring: rgba(13, 71, 161, 0.28);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.field-error {
+    color: var(--state-error);
+    font-size: 0.9rem;
+    margin-top: 6px;
+}
+
+.is-invalid {
+    border-color: var(--state-error) !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+}

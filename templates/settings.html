@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings - FuelSync{% endblock %}
+
+{% block content %}
+<div class="dashboard-container settings-page">
+    <div class="page-header settings-hero">
+        <div class="header-content">
+            <h1><i class="bi bi-sliders"></i> Account Settings</h1>
+            <p class="text-light">Update your profile and preferences for your FuelSync account.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-lg settings-card">
+                <div class="card-header">
+                    <h3><i class="bi bi-person-circle"></i> Profile Identity</h3>
+                </div>
+                <div class="card-body">
+                    <div class="identity-highlight">
+                        <div class="avatar-preview-wrap large">
+                            {% if profile.profile_picture %}
+                                <img src="{{ profile.profile_picture.url }}" alt="Profile picture" class="avatar-preview">
+                            {% else %}
+                                <div class="avatar-preview avatar-preview-placeholder">
+                                    <i class="bi bi-person-circle"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h2 class="display-name">{{ display_name|default:'Account User' }}</h2>
+                            <p class="muted-row">Signed in as @{{ request.user.username }}</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-grid mt-3">
+                        <div class="settings-row">
+                            <span class="label">Full Name</span>
+                            <span class="value">{{ display_name|default:'Not set' }}</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">Email</span>
+                            <span class="value">{{ request.user.email|default:'Not set' }}</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">Account Type</span>
+                            <span class="value">{{ profile.role|default:'User'|title }}</span>
+                        </div>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" class="avatar-upload-form">
+                        {% csrf_token %}
+                        <label class="label upload-label" for="id_profile_picture">Change Profile Picture</label>
+                        {{ avatar_form.profile_picture }}
+                        {% if avatar_form.profile_picture.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {% for error in avatar_form.profile_picture.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <button type="submit" class="btn btn-primary btn-sm upload-btn">Upload Picture</button>
+                    </form>
+
+                    <div class="settings-actions">
+                        <a href="{% url 'profile' %}" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Edit Profile Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card settings-card">
+                <div class="card-header">
+                    <h3><i class="bi bi-toggles"></i> Preferences</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="preferences-form">
+                        {% csrf_token %}
+                        <div class="settings-grid compact">
+                            <label class="settings-row switch-row" for="id_email_notifications">
+                                <span>
+                                    <span class="label">Email Alerts</span>
+                                    <span class="help-text">Receive email updates for important account activity.</span>
+                                </span>
+                                {{ preferences_form.email_notifications }}
+                            </label>
+                            <label class="settings-row switch-row" for="id_sms_notifications">
+                                <span>
+                                    <span class="label">SMS Alerts</span>
+                                    <span class="help-text">Get text notifications for time-sensitive updates.</span>
+                                </span>
+                                {{ preferences_form.sms_notifications }}
+                            </label>
+                            <label class="settings-row switch-row" for="id_dark_mode">
+                                <span>
+                                    <span class="label">Theme Mode</span>
+                                    <span class="help-text">Use a darker interface for low-light environments.</span>
+                                </span>
+                                {{ preferences_form.dark_mode }}
+                            </label>
+                        </div>
+                        {% if preferences_form.errors %}
+                            <div class="alert alert-danger mt-2">
+                                Please check the preference options and try again.
+                            </div>
+                        {% endif %}
+                        <button type="submit" name="save_preferences" value="1" class="btn btn-primary btn-sm upload-btn">Save Preferences</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.settings-page {
+    padding-bottom: 1.5rem;
+}
+
+.settings-hero {
+    margin-bottom: 1rem;
+}
+
+.settings-card {
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.settings-grid {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.identity-highlight {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 0.95rem;
+    border: 1px solid var(--neutral-medium-gray);
+    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, #f8fbff, #eef4ff);
+}
+
+.display-name {
+    margin: 0;
+    font-size: 1.3rem;
+    line-height: 1.2;
+}
+
+.muted-row {
+    margin: 0.25rem 0 0;
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.mt-3 {
+    margin-top: 0.75rem;
+}
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--neutral-medium-gray);
+    border-radius: var(--radius-md);
+    background: #fbfcff;
+}
+
+.switch-row {
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.switch-row input[type="checkbox"] {
+    width: 1.15rem;
+    height: 1.15rem;
+    margin-top: 0.15rem;
+    accent-color: var(--primary-blue);
+    flex-shrink: 0;
+}
+
+.settings-row .label {
+    color: var(--text-light);
+    font-weight: 600;
+}
+
+.settings-row .value {
+    color: var(--text-dark);
+    font-weight: 700;
+}
+
+.help-text {
+    display: block;
+    margin-top: 0.15rem;
+    color: var(--text-light);
+    font-size: 0.85rem;
+}
+
+.settings-actions {
+    margin-top: 1rem;
+}
+
+.avatar-upload-form {
+    margin-top: 1rem;
+    padding: 0.9rem;
+    border: 1px dashed var(--neutral-medium-gray);
+    border-radius: var(--radius-md);
+    background: #ffffff;
+}
+
+.avatar-preview-wrap {
+    margin-bottom: 0.75rem;
+}
+
+.avatar-preview-wrap.large {
+    margin-bottom: 0;
+}
+
+.avatar-preview {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-blue);
+}
+
+.avatar-preview-placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef3fb;
+    color: var(--primary-blue);
+    font-size: 2rem;
+}
+
+.upload-label {
+    display: inline-block;
+    margin-bottom: 0.35rem;
+}
+
+.upload-btn {
+    margin-top: 0.65rem;
+}
+
+.status-badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.83rem;
+}
+
+.status-badge.on {
+    background: #e8faf0;
+    color: #157347;
+}
+
+.status-badge.off {
+    background: #f8e8e8;
+    color: #a02c2c;
+}
+
+.preferences-note {
+    margin-top: 0.9rem;
+    color: var(--text-light);
+    font-size: 0.88rem;
+}
+
+.preferences-form {
+    display: grid;
+    gap: 0.85rem;
+}
+
+@media (max-width: 768px) {
+    .identity-highlight {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}

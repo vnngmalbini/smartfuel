@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Attendant Dashboard - FuelSync{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        padding: 2rem 0;
+    }
+    
+    .dashboard-header {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+    
+    .shift-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1.25rem;
+        text-align: center;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: #666;
+        text-transform: uppercase;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #2ecc71;
+        margin: 0.5rem 0;
+    }
+    
+    .action-button {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        background: #2ecc71;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 500;
+        cursor: pointer;
+        margin: 0.25rem;
+        transition: all 0.3s ease;
+    }
+    
+    .action-button:hover {
+        background: #27ae60;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .action-button.primary {
+        background: #3498db;
+        font-size: 1.1rem;
+        padding: 1rem 2rem;
+    }
+    
+    .action-button.primary:hover {
+        background: #2980b9;
+    }
+    
+    .action-button.secondary {
+        background: #95a5a6;
+    }
+    
+    .action-button.secondary:hover {
+        background: #7f8c8d;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1a3a52;
+        margin: 2rem 0 1rem 0;
+    }
+    
+    .content-box {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .transaction-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .transaction-item {
+        padding: 1rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .transaction-info {
+        flex: 1;
+    }
+    
+    .transaction-time {
+        font-size: 0.875rem;
+        color: #999;
+    }
+    
+    .transaction-fuel {
+        font-weight: 600;
+        color: #1a3a52;
+    }
+    
+    .transaction-amount {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2ecc71;
+        margin-left: 1rem;
+    }
+    
+    .fuel-types-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .fuel-type-card {
+        background: #f9f9f9;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .fuel-type-card:hover {
+        border-color: #2ecc71;
+        box-shadow: 0 2px 8px rgba(46, 204, 113, 0.2);
+    }
+    
+    .fuel-type-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .fuel-type-name {
+        font-weight: 600;
+        color: #1a3a52;
+        margin-bottom: 0.25rem;
+    }
+    
+    .fuel-type-price {
+        font-size: 0.875rem;
+        color: #2ecc71;
+    }
+    
+    .pump-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.75rem;
+        margin: 1rem 0;
+    }
+    
+    .pump-button {
+        padding: 0.75rem;
+        border: 2px solid #e0e0e0;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .pump-button:hover {
+        border-color: #2ecc71;
+        background: #f0f9ff;
+    }
+    
+    .pump-button.active {
+        background: #2ecc71;
+        color: white;
+        border-color: #2ecc71;
+    }
+    
+    .shift-end-btn {
+        background: #e74c3c;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+    
+    .shift-end-btn:hover {
+        background: #c0392b;
+    }
+    
+    .alert-banner {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 4px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        color: #856404;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h1><i class="bi bi-fuel-pump-fill"></i> Attendant Dashboard</h1>
+        <p>Fuel sales and transaction processing</p>
+    </div>
+    
+    <!-- Today's Shift Stats -->
+    <div class="shift-stats">
+        <div class="stat-card">
+            <div class="stat-label">Today's Revenue</div>
+            <div class="stat-value">GH₵{{ today_revenue|floatformat:0 }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Transactions</div>
+            <div class="stat-value">{{ today_transactions }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Fuel Dispensed</div>
+            <div class="stat-value">{{ today_liters|floatformat:0 }} L</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">All-time Transactions</div>
+            <div class="stat-value">{{ total_transactions }}</div>
+        </div>
+    </div>
+    
+    <!-- Main Action - Start Fuel Sale -->
+    <div class="content-box">
+        <h2 class="section-title"><i class="bi bi-lightning-fill"></i> Start New Fuel Sale</h2>
+        <p style="color: #666; margin-bottom: 1.5rem;">Begin a fuel transaction by selecting a pump</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            {% for pump in pumps %}
+            <a href="{% url 'fuel_sale_form' pump.id %}" class="action-button primary" style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <i class="bi bi-fuel-pump" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                Pump {{ pump.pump_number }}<br>
+                <small style="font-size: 0.8rem;">{{ pump.fuel_type.get_name_display }}</small>
+            </a>
+            {% empty %}
+            <div class="alert-banner">
+                <i class="bi bi-exclamation-circle"></i> No operational pumps available. Contact manager.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Fuel Type Info -->
+    <div class="content-box">
+        <h2 class="section-title"><i class="bi bi-droplet-fill"></i> Available Fuel Types</h2>
+        <div class="fuel-types-grid">
+            {% for fuel in fuel_types %}
+            <div class="fuel-type-card">
+                <div class="fuel-type-icon">
+                    {% if fuel.name == 'petrol' %}
+                        🛢️
+                    {% elif fuel.name == 'diesel' %}
+                        ⛽
+                    {% else %}
+                        🔥
+                    {% endif %}
+                </div>
+                <div class="fuel-type-name">{{ fuel.get_name_display }}</div>
+                <div class="fuel-type-price">GH₵{{ fuel.current_price|floatformat:2 }}/L</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Quick Reference - Today's Transactions -->
+    <div class="content-box">
+        <h2 class="section-title"><i class="bi bi-receipt-cutoff"></i> Today's Transactions</h2>
+        {% if recent_transactions %}
+        <ul class="transaction-list">
+            {% for txn in recent_transactions %}
+            <li class="transaction-item">
+                <div class="transaction-info">
+                    <div class="transaction-fuel">
+                        {{ txn.fuel_type.get_name_display }} - {{ txn.liters_dispensed|floatformat:2 }} L
+                    </div>
+                    <div class="transaction-time">
+                        Pump {{ txn.pump.pump_number }} • {{ txn.created_at|time:"H:i" }}
+                    </div>
+                </div>
+                <div class="transaction-amount">
+                    GH₵{{ txn.total_amount|floatformat:2 }}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="text-align: center; color: #999; padding: 2rem;">No transactions yet today</p>
+        {% endif %}
+    </div>
+    
+    <!-- Shift Summary -->
+    <div class="content-box">
+        <h2 class="section-title"><i class="bi bi-clock-history"></i> Shift Summary</h2>
+        <div class="shift-stats">
+            <div class="stat-card" style="text-align: left;">
+                <div class="stat-label">Total Revenue</div>
+                <div class="stat-value" style="text-align: right;">GH₵{{ total_revenue|floatformat:0 }}</div>
+            </div>
+            <div class="stat-card" style="text-align: left;">
+                <div class="stat-label">Total Transactions</div>
+                <div class="stat-value" style="text-align: right;">{{ total_transactions }}</div>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <a href="{% url 'shift_summary' %}" class="action-button secondary">
+                <i class="bi bi-printer"></i> View Shift Summary
+            </a>
+        </div>
+    </div>
+    
+    <!-- Help Section -->
+    <div class="content-box" style="background: #f0f7ff; border: 1px solid #b3d9ff;">
+        <h3><i class="bi bi-question-circle"></i> Transaction Workflow</h3>
+        <ol style="margin: 1rem 0; padding-left: 1.5rem; color: #333;">
+            <li>Select a <strong>pump</strong> from above</li>
+            <li>Choose <strong>fuel type</strong> and enter <strong>liters</strong></li>
+            <li>Select <strong>payment method</strong></li>
+            <li><strong>Review</strong> the transaction details</li>
+            <li>Complete and get <strong>receipt</strong></li>
+        </ol>
+    </div>
+</div>
+
+<script>
+const liveSignatureUrl = "{% url 'dashboard_live_signature' %}";
+let currentLiveSignature = null;
+
+async function pollAttendantDashboardUpdates() {
+    if (document.hidden) return;
+
+    try {
+        const response = await fetch(liveSignatureUrl, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Cache-Control': 'no-cache',
+            },
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        if (!data || !data.signature) return;
+
+        if (currentLiveSignature === null) {
+            currentLiveSignature = data.signature;
+            return;
+        }
+
+        if (data.signature !== currentLiveSignature) {
+            window.location.reload();
+        }
+    } catch (error) {
+        // Ignore transient polling errors and retry on the next interval.
+    }
+}
+
+window.addEventListener('focus', pollAttendantDashboardUpdates);
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        pollAttendantDashboardUpdates();
+    }
+});
+
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        setTimeout(function() {
+            window.location.reload();
+        }, 500);
+    }
+});
+
+pollAttendantDashboardUpdates();
+setInterval(pollAttendantDashboardUpdates, 3000);
+</script>
+{% endblock %}

@@ -1,0 +1,3910 @@
+openapi: 3.0.3
+info:
+  title: Smart Fuel Station Management API
+  version: 1.0.0
+  description: API for fuel station inventory, pumps, sales, and payments
+paths:
+  /api/schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - ht
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/payment/card-tokens/:
+    get:
+      operationId: v1_payment_card_tokens_list
+      description: API endpoints for saved card tokens
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCardTokenList'
+          description: ''
+    post:
+      operationId: v1_payment_card_tokens_create
+      description: API endpoints for saved card tokens
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CardToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CardToken'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardToken'
+          description: ''
+  /api/v1/payment/card-tokens/{id}/:
+    get:
+      operationId: v1_payment_card_tokens_retrieve
+      description: API endpoints for saved card tokens
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardToken'
+          description: ''
+    put:
+      operationId: v1_payment_card_tokens_update
+      description: API endpoints for saved card tokens
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CardToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CardToken'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardToken'
+          description: ''
+    patch:
+      operationId: v1_payment_card_tokens_partial_update
+      description: API endpoints for saved card tokens
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCardToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCardToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCardToken'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardToken'
+          description: ''
+    delete:
+      operationId: v1_payment_card_tokens_destroy
+      description: API endpoints for saved card tokens
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/payment/card-tokens/{id}/set_primary/:
+    post:
+      operationId: v1_payment_card_tokens_set_primary_create
+      description: Set a card as primary
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CardToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CardToken'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardToken'
+          description: ''
+  /api/v1/payment/gateway-logs/:
+    get:
+      operationId: v1_payment_gateway_logs_list
+      description: API endpoints for payment gateway logs
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: provider
+        schema:
+          type: integer
+      - in: query
+        name: transaction
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPaymentGatewayLogList'
+          description: ''
+  /api/v1/payment/gateway-logs/{id}/:
+    get:
+      operationId: v1_payment_gateway_logs_retrieve
+      description: API endpoints for payment gateway logs
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this payment gateway log.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentGatewayLog'
+          description: ''
+  /api/v1/payment/providers/:
+    get:
+      operationId: v1_payment_providers_list
+      description: API endpoints for payment providers
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPaymentProviderList'
+          description: ''
+  /api/v1/payment/providers/{id}/:
+    get:
+      operationId: v1_payment_providers_retrieve
+      description: API endpoints for payment providers
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this payment provider.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentProvider'
+          description: ''
+  /api/v1/payment/transactions/:
+    get:
+      operationId: v1_payment_transactions_list
+      description: API endpoints for payment transactions
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: provider
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - cancelled
+          - completed
+          - failed
+          - pending
+        description: |-
+          * `pending` - Pending
+          * `completed` - Completed
+          * `failed` - Failed
+          * `cancelled` - Cancelled
+      - in: query
+        name: transaction_type
+        schema:
+          type: string
+          enum:
+          - adjustment
+          - fuel_sale
+          - refund
+        description: |-
+          * `fuel_sale` - Fuel Sale
+          * `refund` - Refund
+          * `adjustment` - Adjustment
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPaymentTransactionList'
+          description: ''
+    post:
+      operationId: v1_payment_transactions_create
+      description: API endpoints for payment transactions
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentTransaction'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTransaction'
+          description: ''
+  /api/v1/payment/transactions/{id}/:
+    get:
+      operationId: v1_payment_transactions_retrieve
+      description: API endpoints for payment transactions
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this transaction.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTransaction'
+          description: ''
+    put:
+      operationId: v1_payment_transactions_update
+      description: API endpoints for payment transactions
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this transaction.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentTransaction'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTransaction'
+          description: ''
+    patch:
+      operationId: v1_payment_transactions_partial_update
+      description: API endpoints for payment transactions
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this transaction.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPaymentTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPaymentTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPaymentTransaction'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTransaction'
+          description: ''
+    delete:
+      operationId: v1_payment_transactions_destroy
+      description: API endpoints for payment transactions
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this transaction.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/payment/transactions/{id}/initiate_refund/:
+    post:
+      operationId: v1_payment_transactions_initiate_refund_create
+      description: Initiate refund for a transaction
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this transaction.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentTransaction'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTransaction'
+          description: ''
+  /api/v1/payment/transactions/{id}/verify_payment/:
+    post:
+      operationId: v1_payment_transactions_verify_payment_create
+      description: Verify payment status
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this transaction.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentTransaction'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTransaction'
+          description: ''
+  /api/v1/payment/transactions/daily_summary/:
+    get:
+      operationId: v1_payment_transactions_daily_summary_retrieve
+      description: Get today's payment summary
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentTransaction'
+          description: ''
+  /api/v1/station/audit-logs/:
+    get:
+      operationId: v1_station_audit_logs_list
+      description: API endpoints for audit logs
+      parameters:
+      - in: query
+        name: action
+        schema:
+          type: string
+          enum:
+          - inventory_update
+          - login
+          - logout
+          - price_change
+          - transaction
+          - user_created
+          - user_deleted
+        description: |-
+          * `login` - Login
+          * `logout` - Logout
+          * `price_change` - Price Change
+          * `inventory_update` - Inventory Update
+          * `transaction` - Transaction
+          * `user_created` - User Created
+          * `user_deleted` - User Deleted
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: user
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuditLogList'
+          description: ''
+  /api/v1/station/audit-logs/{id}/:
+    get:
+      operationId: v1_station_audit_logs_retrieve
+      description: API endpoints for audit logs
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this audit log.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLog'
+          description: ''
+  /api/v1/station/customers/:
+    get:
+      operationId: v1_station_customers_list
+      description: API endpoints for customer management
+      parameters:
+      - in: query
+        name: is_registered
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCustomerList'
+          description: ''
+    post:
+      operationId: v1_station_customers_create
+      description: API endpoints for customer management
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Customer'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+  /api/v1/station/customers/{id}/:
+    get:
+      operationId: v1_station_customers_retrieve
+      description: API endpoints for customer management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+    put:
+      operationId: v1_station_customers_update
+      description: API endpoints for customer management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Customer'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+    patch:
+      operationId: v1_station_customers_partial_update
+      description: API endpoints for customer management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomer'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+    delete:
+      operationId: v1_station_customers_destroy
+      description: API endpoints for customer management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/station/customers/top_customers/:
+    get:
+      operationId: v1_station_customers_top_customers_retrieve
+      description: Get top customers by purchase amount
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+  /api/v1/station/fuel-inventory/:
+    get:
+      operationId: v1_station_fuel_inventory_list
+      description: API endpoints for fuel inventory management
+      parameters:
+      - in: query
+        name: fuel_type
+        schema:
+          type: integer
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFuelInventoryList'
+          description: ''
+    post:
+      operationId: v1_station_fuel_inventory_create
+      description: API endpoints for fuel inventory management
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FuelInventory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FuelInventory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FuelInventory'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelInventory'
+          description: ''
+  /api/v1/station/fuel-inventory/{id}/:
+    get:
+      operationId: v1_station_fuel_inventory_retrieve
+      description: API endpoints for fuel inventory management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this fuel inventory.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelInventory'
+          description: ''
+    put:
+      operationId: v1_station_fuel_inventory_update
+      description: API endpoints for fuel inventory management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this fuel inventory.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FuelInventory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FuelInventory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FuelInventory'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelInventory'
+          description: ''
+    patch:
+      operationId: v1_station_fuel_inventory_partial_update
+      description: API endpoints for fuel inventory management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this fuel inventory.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFuelInventory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFuelInventory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFuelInventory'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelInventory'
+          description: ''
+    delete:
+      operationId: v1_station_fuel_inventory_destroy
+      description: API endpoints for fuel inventory management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this fuel inventory.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/station/fuel-inventory/{id}/restock/:
+    post:
+      operationId: v1_station_fuel_inventory_restock_create
+      description: Add fuel to inventory
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this fuel inventory.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FuelInventory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FuelInventory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FuelInventory'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelInventory'
+          description: ''
+  /api/v1/station/fuel-inventory/low_stock_alerts/:
+    get:
+      operationId: v1_station_fuel_inventory_low_stock_alerts_retrieve
+      description: Get all fuels with low stock
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelInventory'
+          description: ''
+  /api/v1/station/fuel-types/:
+    get:
+      operationId: v1_station_fuel_types_list
+      description: API endpoints for fuel types
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFuelTypeList'
+          description: ''
+    post:
+      operationId: v1_station_fuel_types_create
+      description: API endpoints for fuel types
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FuelType'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FuelType'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FuelType'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelType'
+          description: ''
+  /api/v1/station/fuel-types/{id}/:
+    get:
+      operationId: v1_station_fuel_types_retrieve
+      description: API endpoints for fuel types
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this fuel type.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelType'
+          description: ''
+    put:
+      operationId: v1_station_fuel_types_update
+      description: API endpoints for fuel types
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this fuel type.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FuelType'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FuelType'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FuelType'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelType'
+          description: ''
+    patch:
+      operationId: v1_station_fuel_types_partial_update
+      description: API endpoints for fuel types
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this fuel type.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFuelType'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFuelType'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFuelType'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelType'
+          description: ''
+    delete:
+      operationId: v1_station_fuel_types_destroy
+      description: API endpoints for fuel types
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this fuel type.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/station/fuel-types/{id}/update_price/:
+    post:
+      operationId: v1_station_fuel_types_update_price_create
+      description: Update fuel price with history tracking
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this fuel type.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FuelType'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FuelType'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FuelType'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuelType'
+          description: ''
+  /api/v1/station/notifications/:
+    get:
+      operationId: v1_station_notifications_list
+      description: API endpoints for notifications
+      parameters:
+      - in: query
+        name: is_read
+        schema:
+          type: boolean
+      - in: query
+        name: notification_type
+        schema:
+          type: string
+          enum:
+          - high_transaction
+          - low_stock
+          - payment_failed
+          - pump_issue
+          - system
+        description: |-
+          * `low_stock` - Low Stock Alert
+          * `pump_issue` - Pump Issue
+          * `high_transaction` - High Transaction
+          * `payment_failed` - Payment Failed
+          * `system` - System Alert
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationList'
+          description: ''
+    post:
+      operationId: v1_station_notifications_create
+      description: API endpoints for notifications
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/station/notifications/{id}/:
+    get:
+      operationId: v1_station_notifications_retrieve
+      description: API endpoints for notifications
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this notification.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+    put:
+      operationId: v1_station_notifications_update
+      description: API endpoints for notifications
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this notification.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+    patch:
+      operationId: v1_station_notifications_partial_update
+      description: API endpoints for notifications
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this notification.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNotification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNotification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNotification'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+    delete:
+      operationId: v1_station_notifications_destroy
+      description: API endpoints for notifications
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this notification.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/station/notifications/{id}/mark_as_read/:
+    post:
+      operationId: v1_station_notifications_mark_as_read_create
+      description: Mark notification as read
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this notification.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/station/notifications/mark_all_as_read/:
+    post:
+      operationId: v1_station_notifications_mark_all_as_read_create
+      description: Mark all notifications as read
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/station/notifications/unread_count/:
+    get:
+      operationId: v1_station_notifications_unread_count_retrieve
+      description: Get unread notification count
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/station/pumps/:
+    get:
+      operationId: v1_station_pumps_list
+      description: API endpoints for pump management
+      parameters:
+      - in: query
+        name: fuel_type
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - maintenance
+          - offline
+          - operational
+        description: |-
+          * `operational` - Operational
+          * `maintenance` - Under Maintenance
+          * `offline` - Offline
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPumpList'
+          description: ''
+    post:
+      operationId: v1_station_pumps_create
+      description: API endpoints for pump management
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pump'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Pump'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Pump'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pump'
+          description: ''
+  /api/v1/station/pumps/{id}/:
+    get:
+      operationId: v1_station_pumps_retrieve
+      description: API endpoints for pump management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this pump.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pump'
+          description: ''
+    put:
+      operationId: v1_station_pumps_update
+      description: API endpoints for pump management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this pump.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pump'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Pump'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Pump'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pump'
+          description: ''
+    patch:
+      operationId: v1_station_pumps_partial_update
+      description: API endpoints for pump management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this pump.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPump'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPump'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPump'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pump'
+          description: ''
+    delete:
+      operationId: v1_station_pumps_destroy
+      description: API endpoints for pump management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this pump.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/station/pumps/{id}/update_status/:
+    post:
+      operationId: v1_station_pumps_update_status_create
+      description: Update pump status
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this pump.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pump'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Pump'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Pump'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pump'
+          description: ''
+  /api/v1/station/pumps/statistics/:
+    get:
+      operationId: v1_station_pumps_statistics_retrieve
+      description: Get pump statistics
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pump'
+          description: ''
+  /api/v1/station/receipts/:
+    get:
+      operationId: v1_station_receipts_list
+      description: API endpoints for receipts
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReceiptList'
+          description: ''
+  /api/v1/station/receipts/{id}/:
+    get:
+      operationId: v1_station_receipts_retrieve
+      description: API endpoints for receipts
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this receipt.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Receipt'
+          description: ''
+  /api/v1/station/sales-reports/:
+    get:
+      operationId: v1_station_sales_reports_list
+      description: API endpoints for daily sales reports
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDailySalesReportList'
+          description: ''
+  /api/v1/station/sales-reports/{id}/:
+    get:
+      operationId: v1_station_sales_reports_retrieve
+      description: API endpoints for daily sales reports
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this daily sales report.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailySalesReport'
+          description: ''
+  /api/v1/station/sales-reports/current_month/:
+    get:
+      operationId: v1_station_sales_reports_current_month_retrieve
+      description: Get current month's reports
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DailySalesReport'
+          description: ''
+  /api/v1/station/staff/:
+    get:
+      operationId: v1_station_staff_list
+      description: API endpoints for staff management
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: role
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffList'
+          description: ''
+    post:
+      operationId: v1_station_staff_create
+      description: API endpoints for staff management
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Staff'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Staff'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Staff'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Staff'
+          description: ''
+  /api/v1/station/staff/{id}/:
+    get:
+      operationId: v1_station_staff_retrieve
+      description: API endpoints for staff management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this staff.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Staff'
+          description: ''
+    put:
+      operationId: v1_station_staff_update
+      description: API endpoints for staff management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this staff.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Staff'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Staff'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Staff'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Staff'
+          description: ''
+    patch:
+      operationId: v1_station_staff_partial_update
+      description: API endpoints for staff management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this staff.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaff'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaff'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaff'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Staff'
+          description: ''
+    delete:
+      operationId: v1_station_staff_destroy
+      description: API endpoints for staff management
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this staff.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/station/staff/{id}/toggle_active/:
+    post:
+      operationId: v1_station_staff_toggle_active_create
+      description: Activate/deactivate staff member
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this staff.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Staff'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Staff'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Staff'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Staff'
+          description: ''
+  /api/v1/station/transactions/:
+    get:
+      operationId: v1_station_transactions_list
+      description: API endpoints for transactions
+      parameters:
+      - in: query
+        name: fuel_type
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: payment_method
+        schema:
+          type: string
+          enum:
+          - bank_transfer
+          - card
+          - cash
+          - mobile_money
+          - paystack
+        description: |-
+          * `cash` - Cash
+          * `card` - Credit/Debit Card
+          * `mobile_money` - Mobile Money
+          * `paystack` - Paystack
+          * `bank_transfer` - Bank Transfer
+      - in: query
+        name: pump
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - completed
+          - failed
+          - pending
+          - refunded
+        description: |-
+          * `pending` - Pending
+          * `completed` - Completed
+          * `failed` - Failed
+          * `refunded` - Refunded
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTransactionList'
+          description: ''
+    post:
+      operationId: v1_station_transactions_create
+      description: API endpoints for transactions
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+  /api/v1/station/transactions/{id}/:
+    get:
+      operationId: v1_station_transactions_retrieve
+      description: API endpoints for transactions
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this transaction.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+    put:
+      operationId: v1_station_transactions_update
+      description: API endpoints for transactions
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this transaction.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+    patch:
+      operationId: v1_station_transactions_partial_update
+      description: API endpoints for transactions
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this transaction.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTransaction'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+    delete:
+      operationId: v1_station_transactions_destroy
+      description: API endpoints for transactions
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this transaction.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/station/transactions/daily_summary/:
+    get:
+      operationId: v1_station_transactions_daily_summary_retrieve
+      description: Get today's transaction summary
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+  /api/v1/station/transactions/date_range_summary/:
+    get:
+      operationId: v1_station_transactions_date_range_summary_retrieve
+      description: Get summary for a date range
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+components:
+  schemas:
+    ActionEnum:
+      enum:
+      - login
+      - logout
+      - price_change
+      - inventory_update
+      - transaction
+      - user_created
+      - user_deleted
+      type: string
+      description: |-
+        * `login` - Login
+        * `logout` - Logout
+        * `price_change` - Price Change
+        * `inventory_update` - Inventory Update
+        * `transaction` - Transaction
+        * `user_created` - User Created
+        * `user_deleted` - User Deleted
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+          nullable: true
+        username:
+          type: string
+          readOnly: true
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+        description:
+          type: string
+        ip_address:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - action
+      - created_at
+      - description
+      - id
+      - username
+    CardToken:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        phone:
+          type: string
+          maxLength: 20
+        card_token:
+          type: string
+          readOnly: true
+        card_last4:
+          type: string
+          maxLength: 4
+        card_type:
+          type: string
+          maxLength: 50
+        is_primary:
+          type: boolean
+        expires_at:
+          type: string
+          format: date
+      required:
+      - card_last4
+      - card_token
+      - card_type
+      - expires_at
+      - id
+      - phone
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        phone:
+          type: string
+          maxLength: 20
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        total_purchases:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+          readOnly: true
+        total_liters:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        loyalty_points:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        is_registered:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - first_name
+      - id
+      - last_name
+      - phone
+      - total_liters
+      - total_purchases
+      - updated_at
+    DailySalesReport:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        date:
+          type: string
+          format: date
+        total_transactions:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        total_liters_sold:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        total_revenue:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        total_expenses:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        profit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+          readOnly: true
+        petrol_sold:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        diesel_sold:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        lpg_sold:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - date
+      - id
+      - profit
+    FuelInventory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        fuel_type:
+          type: integer
+        fuel_type_name:
+          type: string
+          readOnly: true
+        quantity_liters:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        min_threshold:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        max_capacity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        cost_per_liter:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        is_low_stock:
+          type: string
+          readOnly: true
+        last_restocked:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - fuel_type
+      - fuel_type_name
+      - id
+      - is_low_stock
+      - last_restocked
+    FuelType:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          $ref: '#/components/schemas/FuelTypeNameEnum'
+        description:
+          type: string
+        current_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        price_updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - name
+      - price_updated_at
+    FuelTypeNameEnum:
+      enum:
+      - petrol
+      - diesel
+      - lpg
+      type: string
+      description: |-
+        * `petrol` - Petrol (Premium 95)
+        * `diesel` - Diesel
+        * `lpg` - LPG (Liquefied Petroleum Gas)
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        notification_type:
+          $ref: '#/components/schemas/NotificationTypeEnum'
+        title:
+          type: string
+          maxLength: 200
+        message:
+          type: string
+        related_fuel:
+          type: integer
+          nullable: true
+        fuel_name:
+          type: string
+          readOnly: true
+        related_pump:
+          type: integer
+          nullable: true
+        pump_number:
+          type: string
+          readOnly: true
+        is_read:
+          type: boolean
+        read_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - fuel_name
+      - id
+      - message
+      - notification_type
+      - pump_number
+      - read_at
+      - title
+    NotificationTypeEnum:
+      enum:
+      - low_stock
+      - pump_issue
+      - high_transaction
+      - payment_failed
+      - system
+      type: string
+      description: |-
+        * `low_stock` - Low Stock Alert
+        * `pump_issue` - Pump Issue
+        * `high_transaction` - High Transaction
+        * `payment_failed` - Payment Failed
+        * `system` - System Alert
+    PaginatedAuditLogList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditLog'
+    PaginatedCardTokenList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardToken'
+    PaginatedCustomerList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Customer'
+    PaginatedDailySalesReportList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DailySalesReport'
+    PaginatedFuelInventoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FuelInventory'
+    PaginatedFuelTypeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FuelType'
+    PaginatedNotificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    PaginatedPaymentGatewayLogList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentGatewayLog'
+    PaginatedPaymentProviderList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentProvider'
+    PaginatedPaymentTransactionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentTransaction'
+    PaginatedPumpList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pump'
+    PaginatedReceiptList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Receipt'
+    PaginatedStaffList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Staff'
+    PaginatedTransactionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+    PatchedCardToken:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        phone:
+          type: string
+          maxLength: 20
+        card_token:
+          type: string
+          readOnly: true
+        card_last4:
+          type: string
+          maxLength: 4
+        card_type:
+          type: string
+          maxLength: 50
+        is_primary:
+          type: boolean
+        expires_at:
+          type: string
+          format: date
+    PatchedCustomer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        phone:
+          type: string
+          maxLength: 20
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        total_purchases:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+          readOnly: true
+        total_liters:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        loyalty_points:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        is_registered:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedFuelInventory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        fuel_type:
+          type: integer
+        fuel_type_name:
+          type: string
+          readOnly: true
+        quantity_liters:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        min_threshold:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        max_capacity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        cost_per_liter:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        is_low_stock:
+          type: string
+          readOnly: true
+        last_restocked:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+    PatchedFuelType:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          $ref: '#/components/schemas/FuelTypeNameEnum'
+        description:
+          type: string
+        current_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        price_updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedNotification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        notification_type:
+          $ref: '#/components/schemas/NotificationTypeEnum'
+        title:
+          type: string
+          maxLength: 200
+        message:
+          type: string
+        related_fuel:
+          type: integer
+          nullable: true
+        fuel_name:
+          type: string
+          readOnly: true
+        related_pump:
+          type: integer
+          nullable: true
+        pump_number:
+          type: string
+          readOnly: true
+        is_read:
+          type: boolean
+        read_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedPaymentTransaction:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        phone:
+          type: string
+          maxLength: 20
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        reference:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/PaymentTransactionStatusEnum'
+        transaction_type:
+          $ref: '#/components/schemas/TransactionTypeEnum'
+        provider:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+    PatchedPump:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        pump_number:
+          type: string
+          maxLength: 10
+        fuel_type:
+          type: integer
+        fuel_type_name:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/PumpStatusEnum'
+        meter_reading:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        total_liters_dispensed:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_revenue:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+          readOnly: true
+        installation_date:
+          type: string
+          format: date
+        last_maintenance:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedStaff:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+        user_email:
+          type: string
+          readOnly: true
+        user_first_name:
+          type: string
+          readOnly: true
+        user_last_name:
+          type: string
+          readOnly: true
+        role:
+          type: integer
+        role_name:
+          type: string
+          readOnly: true
+        phone:
+          type: string
+          maxLength: 20
+        national_id:
+          type: string
+          nullable: true
+          maxLength: 50
+        date_hired:
+          type: string
+          format: date
+        salary:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        is_active:
+          type: boolean
+        profile_picture:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedTransaction:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        transaction_id:
+          type: string
+          maxLength: 50
+        pump:
+          type: integer
+        pump_number:
+          type: string
+          readOnly: true
+        customer:
+          type: integer
+          nullable: true
+        customer_name:
+          type: string
+          readOnly: true
+        fuel_type:
+          type: integer
+        fuel_type_name:
+          type: string
+          readOnly: true
+        liters_dispensed:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        price_per_liter:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        status:
+          $ref: '#/components/schemas/TransactionStatusEnum'
+        staff:
+          type: integer
+          nullable: true
+        staff_name:
+          type: string
+          readOnly: true
+        reference_number:
+          type: string
+          nullable: true
+          maxLength: 100
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+    PaymentGatewayLog:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        transaction:
+          type: integer
+        transaction_ref:
+          type: string
+          readOnly: true
+        provider:
+          type: integer
+        request_data: {}
+        response_data: {}
+        status_code:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        error_message:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - provider
+      - request_data
+      - response_data
+      - transaction
+      - transaction_ref
+    PaymentMethodEnum:
+      enum:
+      - cash
+      - card
+      - mobile_money
+      - paystack
+      - bank_transfer
+      type: string
+      description: |-
+        * `cash` - Cash
+        * `card` - Credit/Debit Card
+        * `mobile_money` - Mobile Money
+        * `paystack` - Paystack
+        * `bank_transfer` - Bank Transfer
+    PaymentProvider:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          allOf:
+          - $ref: '#/components/schemas/PaymentProviderNameEnum'
+          readOnly: true
+        is_active:
+          type: boolean
+        transaction_fee_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+      required:
+      - id
+      - name
+    PaymentProviderNameEnum:
+      enum:
+      - paystack
+      - mtn_momo
+      - airtel_money
+      - bank_card
+      type: string
+      description: |-
+        * `paystack` - Paystack
+        * `mtn_momo` - MTN Mobile Money
+        * `airtel_money` - Airtel Money
+        * `bank_card` - Bank Card
+    PaymentTransaction:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        phone:
+          type: string
+          maxLength: 20
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        reference:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/PaymentTransactionStatusEnum'
+        transaction_type:
+          $ref: '#/components/schemas/TransactionTypeEnum'
+        provider:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - amount
+      - completed_at
+      - created_at
+      - id
+      - phone
+      - reference
+    PaymentTransactionStatusEnum:
+      enum:
+      - pending
+      - completed
+      - failed
+      - cancelled
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `completed` - Completed
+        * `failed` - Failed
+        * `cancelled` - Cancelled
+    Pump:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        pump_number:
+          type: string
+          maxLength: 10
+        fuel_type:
+          type: integer
+        fuel_type_name:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/PumpStatusEnum'
+        meter_reading:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        total_liters_dispensed:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        total_revenue:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+          readOnly: true
+        installation_date:
+          type: string
+          format: date
+        last_maintenance:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - fuel_type
+      - fuel_type_name
+      - id
+      - installation_date
+      - pump_number
+      - total_liters_dispensed
+      - total_revenue
+      - updated_at
+    PumpStatusEnum:
+      enum:
+      - operational
+      - maintenance
+      - offline
+      type: string
+      description: |-
+        * `operational` - Operational
+        * `maintenance` - Under Maintenance
+        * `offline` - Offline
+    Receipt:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        transaction:
+          type: integer
+        transaction_id:
+          type: string
+          readOnly: true
+        receipt_number:
+          type: string
+          maxLength: 50
+        customer_phone:
+          type: string
+          readOnly: true
+        printed:
+          type: boolean
+        email_sent:
+          type: boolean
+        sms_sent:
+          type: boolean
+        loyalty_points_earned:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        discount_applied:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        final_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - customer_phone
+      - final_amount
+      - id
+      - receipt_number
+      - transaction
+      - transaction_id
+    Staff:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+        user_email:
+          type: string
+          readOnly: true
+        user_first_name:
+          type: string
+          readOnly: true
+        user_last_name:
+          type: string
+          readOnly: true
+        role:
+          type: integer
+        role_name:
+          type: string
+          readOnly: true
+        phone:
+          type: string
+          maxLength: 20
+        national_id:
+          type: string
+          nullable: true
+          maxLength: 50
+        date_hired:
+          type: string
+          format: date
+        salary:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        is_active:
+          type: boolean
+        profile_picture:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date_hired
+      - id
+      - phone
+      - role
+      - role_name
+      - updated_at
+      - user
+      - user_email
+      - user_first_name
+      - user_last_name
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        transaction_id:
+          type: string
+          maxLength: 50
+        pump:
+          type: integer
+        pump_number:
+          type: string
+          readOnly: true
+        customer:
+          type: integer
+          nullable: true
+        customer_name:
+          type: string
+          readOnly: true
+        fuel_type:
+          type: integer
+        fuel_type_name:
+          type: string
+          readOnly: true
+        liters_dispensed:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        price_per_liter:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        status:
+          $ref: '#/components/schemas/TransactionStatusEnum'
+        staff:
+          type: integer
+          nullable: true
+        staff_name:
+          type: string
+          readOnly: true
+        reference_number:
+          type: string
+          nullable: true
+          maxLength: 100
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - completed_at
+      - created_at
+      - customer_name
+      - fuel_type
+      - fuel_type_name
+      - id
+      - liters_dispensed
+      - payment_method
+      - price_per_liter
+      - pump
+      - pump_number
+      - staff_name
+      - total_amount
+      - transaction_id
+    TransactionStatusEnum:
+      enum:
+      - pending
+      - completed
+      - failed
+      - refunded
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `completed` - Completed
+        * `failed` - Failed
+        * `refunded` - Refunded
+    TransactionTypeEnum:
+      enum:
+      - fuel_sale
+      - refund
+      - adjustment
+      type: string
+      description: |-
+        * `fuel_sale` - Fuel Sale
+        * `refund` - Refund
+        * `adjustment` - Adjustment
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"

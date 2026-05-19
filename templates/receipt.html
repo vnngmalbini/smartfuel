@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Find Receipt | FuelSync</title>
+    <link rel="stylesheet" href="{% static 'css/ui-base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fuelsync-pages.css' %}">
+    <link rel="stylesheet" href="{% static 'css/professional-polish.css' %}">
+    <style>
+        .hero { text-align: center; }
+        .hero::before { background: radial-gradient(circle, rgba(255,255,255,0.08), transparent); }
+        .hero h1 { margin: 2px auto 0; }
+        .hero p { margin: 6px auto 0; }
+
+        .search-form { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+        .search-form input { color: #071428; font-size: 1.02rem; padding: 16px 18px; border-color: transparent; }
+        .search-form input::placeholder { color: #9AA6B2; opacity:0.9; }
+        .search-form input:focus { box-shadow: 0 8px 26px rgba(13,71,161,0.08); border-color: rgba(13,71,161,0.12); }
+
+        .search-form button, .search-form .btn-search {
+            border: none;
+            border-radius: 12px;
+            padding: 0 16px;
+            font-size: 0.94rem;
+            font-weight: 800;
+            color: #ffffff;
+            cursor: pointer;
+            height: 46px;
+            min-width: 120px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(180deg, #0b3b61 0%, #072b45 100%);
+            box-shadow: 0 10px 26px rgba(11,59,97,0.18);
+            transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+        }
+        .search-form .btn-search svg { color: rgba(255,255,255,0.95); flex: none; }
+        .search-form .btn-search span { display: inline-block; line-height:1; }
+        .search-form .btn-search:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(13,71,161,0.18); }
+        .search-form .btn-search:focus { outline: none; box-shadow: 0 0 0 4px rgba(13,71,161,0.12); }
+
+        .hints { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-top: 10px; }
+        .hint { padding: 9px 11px; border-radius: 9px; background: linear-gradient(135deg, #FBFDFF 0%, #F8FAFC 100%); border: 1px solid var(--panel-border); color: var(--muted); font-size: 0.89rem; transition: all .15s ease; position: relative; padding-left: 28px; }
+        .hint::before { content: '✓'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #10B981; font-weight: 800; font-size: 1.1rem; }
+        .hint:hover { background: linear-gradient(135deg, #F0F8FF 0%, #ECEFF7 100%); border-color: #D0DCE8; transform: translateX(2px); }
+
+        .message { margin-top: 10px; padding: 10px 10px 10px 28px; border-radius: 9px; font-size: 0.91rem; line-height: 1.3; position: relative; }
+        .message::before { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 800; font-size: 1.2rem; }
+        .message.success { background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.04) 100%); border: 1px solid rgba(16,185,129,0.2); color: #065F46; }
+        .message.success::before { content: '✓'; color: #10B981; }
+        .message.error { background: linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(239,68,68,0.04) 100%); border: 1px solid rgba(239,68,68,0.15); color: #991B1B; }
+        .message.error::before { content: '⚠'; color: #EF4444; }
+
+        @media (max-width: 900px) {
+            .hints { grid-template-columns: 1fr; }
+            .search-form { grid-template-columns: 1fr; }
+            .search-form button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+    <main class="shell">
+        <section class="hero">
+            <div class="eyebrow">Find Receipt</div>
+            <h1>Find your receipt</h1>
+            <p>Enter the phone number used for payment to view or download your receipt as a PDF.</p>
+        </section>
+
+        <section class="card">
+            <form method="GET" class="search-form">
+                <input type="text" name="q" placeholder="Enter phone number" value="{{ q|default_if_none:'' }}" aria-label="Phone number" maxlength="15">
+                <button type="submit" aria-label="Find receipt" class="btn-search" id="receiptSearchBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span id="receiptSearchBtnText">Find receipt</span>
+                </button>
+            </form>
+
+            <div class="hints">
+                <div class="hint">Use the phone number that was used for payment.</div>
+                <div class="hint">PDF opens in your browser automatically.</div>
+                <div class="hint">You can print or save the receipt anytime.</div>
+                <div class="hint">Keep receipts for your records.</div>
+            </div>
+
+            {% if transaction %}
+                <div class="message success">
+                    <strong>Receipt found</strong>
+                    Your PDF receipt opened automatically. If not, check your downloads folder.
+                </div>
+            {% elif q %}
+                <div class="message error">
+                    <strong>No receipt found</strong>
+                    We could not find a transaction for that phone number. Please check and try again.
+                </div>
+            {% else %}
+                <div class="message" style="background:#F8FAFC;border:1px solid #E2E8F0;color:#1F2937;padding-left:12px;">
+                    <strong>Start by searching a phone number</strong>
+                    We will locate the latest matching transaction and open the receipt PDF for you.
+                </div>
+            {% endif %}
+        </section>
+    </main>
+    <script>
+        // Use sessionStorage to reliably clear the input after a search
+        (function () {
+            const FORM_KEY = 'fuelsync.receipt_search_submitted';
+            const form = document.querySelector('.search-form');
+            const searchBtn = document.getElementById('receiptSearchBtn');
+            const searchBtnText = document.getElementById('receiptSearchBtnText');
+            const toastWrap = document.getElementById('toastWrap');
+
+            function showToast(message, tone) {
+                if (!toastWrap) return;
+                const toast = document.createElement('div');
+                toast.className = `toast ${tone || 'info'}`;
+                toast.textContent = message;
+                toastWrap.appendChild(toast);
+                window.setTimeout(() => toast.remove(), 2600);
+            }
+
+            // mark that the user submitted the form so the next load can clear the field
+            if (form) {
+                form.addEventListener('submit', function () {
+                    if (searchBtn && searchBtnText) {
+                        searchBtn.disabled = true;
+                        searchBtnText.textContent = 'Searching...';
+                    }
+                    showToast('Searching for receipt...', 'info');
+                    try { sessionStorage.setItem(FORM_KEY, '1'); } catch (e) { /* ignore */ }
+                }, { capture: true });
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                {% if transaction %}
+                showToast('Receipt found. Opening result...', 'success');
+                {% elif q %}
+                showToast('No receipt matched that phone number.', 'error');
+                {% endif %}
+                try {
+                    const input = document.querySelector('.search-form input[name="q"]');
+                    const submitted = sessionStorage.getItem(FORM_KEY);
+                    // clear only if there was a recent submit and the field has a value
+                    if (submitted && input && input.value && input.value.trim() !== '') {
+                        // small delay so messages/redirects can surface first
+                        setTimeout(function () {
+                            input.value = '';
+                            // remove q from url without reloading
+                            if (window.history && window.history.replaceState) {
+                                const url = new URL(window.location.href);
+                                url.searchParams.delete('q');
+                                window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+                            }
+                            try { sessionStorage.removeItem(FORM_KEY); } catch (e) { /* ignore */ }
+                        }, 600);
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

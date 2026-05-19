@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login FuelSync</title>
+    <link rel="stylesheet" href="{% static 'css/ui-base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fuelsync-core.css' %}">
+    <link rel="stylesheet" href="{% static 'css/professional-polish.css' %}">
+    <style>
+        body {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        .shell {
+            width: min(1120px, 100%);
+            display: grid;
+            grid-template-columns: 0.95fr 1.05fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .hero {
+            border: 1px solid var(--panel-border);
+            background: var(--panel);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            padding: 42px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 620px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -35%;
+            right: -20%;
+            width: 340px;
+            height: 340px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 122, 0, 0.10) 0%, rgba(255, 184, 77, 0.05) 35%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            width: fit-content;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            font-size: 1.05rem;
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.2);
+        }
+
+        h1 {
+            margin: 18px 0 12px;
+            font-size: clamp(2.4rem, 4vw, 4rem);
+            line-height: 0.98;
+            color: var(--text);
+        }
+
+        .hero p {
+            margin: 0;
+            max-width: 40ch;
+            color: var(--text-muted);
+            font-size: 1.02rem;
+            line-height: 1.7;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 28px;
+        }
+
+        .stat {
+            padding: 18px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #FFF8F1 100%);
+            border: 1px solid var(--panel-border);
+            box-shadow: 0 10px 24px rgba(13, 71, 161, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient-accent);
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 1.15rem;
+            margin-bottom: 6px;
+            color: var(--primary);
+        }
+
+        .stat span {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+        }
+
+        .card {
+            border: 1px solid rgba(13, 71, 161, 0.14);
+            background: linear-gradient(160deg, #FFFFFF 0%, #F4F8FF 100%);
+            border-radius: 24px;
+            box-shadow: 0 20px 42px rgba(13, 71, 161, 0.12);
+            padding: 28px 30px;
+            align-self: start;
+        }
+
+        .card h2 {
+            margin: 0 0 8px;
+            font-size: 2rem;
+            color: #1E2638;
+            letter-spacing: -0.3px;
+        }
+
+        .card .subtitle {
+            margin: 0 0 18px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            max-width: 42ch;
+        }
+
+        form {
+            display: grid;
+            gap: 14px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #111827;
+        }
+
+        .input-wrap { position: relative; }
+
+        .input-group-phone {
+            display: flex;
+            align-items: center;
+            border: 1px solid #E2E8F0;
+            background: #FAFBFC;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .phone-prefix {
+            padding: 12px 14px;
+            background: #f0f2f5;
+            color: #1E2638;
+            font-weight: 700;
+            border-right: 1px solid #E2E8F0;
+            white-space: nowrap;
+        }
+
+        .input-group-phone input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 12px 14px;
+            font-size: 1rem;
+            color: #1E2638;
+            outline: none;
+        }
+
+        .input-group-phone input::placeholder {
+            color: #718096;
+        }
+
+        .input-group-phone:focus-within {
+            border-color: #0D47A1;
+            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.14);
+            background: white;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 0;
+            bottom: 0;
+            margin: auto 0;
+            background: transparent;
+            border: none;
+            padding: 0;
+            width: 36px;
+            height: 36px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            color: #6B7280;
+            flex-shrink: 0;
+            line-height: 0;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .password-toggle:focus { 
+            outline: none;
+        }
+        .password-toggle:hover {
+            color: #0D47A1;
+        }
+
+        .field input {
+            width: 100%;
+            border: 1px solid #C8D5EA;
+            background: #FFFFFF;
+            color: var(--text);
+            border-radius: 12px;
+            padding: 13px 14px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.18s ease;
+        }
+
+        .field input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .field input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.14);
+            background: white;
+        }
+
+        .field select {
+            width: 100%;
+            border: 1px solid #C8D5EA;
+            background: #FFFFFF;
+            color: var(--text);
+            border-radius: 12px;
+            padding: 13px 14px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.18s ease;
+        }
+
+        .field select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.14);
+            background: white;
+        }
+
+        /* Role selector styles */
+        .role-selector {
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+            padding: 0 !important;
+            list-style: none;
+        }
+
+        .role-selector li {
+            margin: 0 !important;
+            padding: 0 !important;
+            list-style: none;
+        }
+
+        .role-selector label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            aspect-ratio: 1 / 1;
+            min-height: 128px;
+            padding: 14px 12px;
+            border: 1px solid #D8E1EF;
+            border-radius: 14px;
+            background: #FFFFFF;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+            font-weight: 600;
+            color: #1E2638;
+            text-align: center;
+        }
+
+        .role-selector label:hover {
+            border-color: rgba(13, 71, 161, 0.45);
+            background: linear-gradient(135deg, #F5F9FF 0%, #EDF4FF 100%);
+            box-shadow: 0 10px 20px rgba(13, 71, 161, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .role-selector input[type="radio"] {
+            margin: 0;
+            transform: scale(1.05);
+            accent-color: #0D47A1;
+        }
+
+        .role-selector label.selected {
+            border-color: #0D47A1;
+            background: #F0F6FF;
+            box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.08);
+            color: #0D47A1;
+            font-weight: 700;
+        }
+
+        .role-selector label.selected::before {
+            content: '\2713';
+            width: 20px;
+            height: 20px;
+            background: #0D47A1;
+            color: white;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 11px;
+            font-weight: bold;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .role-field-note {
+            margin: 6px 0 0;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .help {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-top: 6px;
+        }
+
+        .actions {
+            display: grid;
+            gap: 12px;
+            margin-top: 6px;
+        }
+
+        .signup-note {
+            margin: 2px 0 0;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .signup-note a {
+            color: var(--primary);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .signup-note a:hover {
+            text-decoration: underline;
+        }
+
+        button[type='submit'] {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            padding: 13px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #0D47A1 0%, #1565C0 52%, #0A3A7D 100%);
+            box-shadow: 0 14px 28px rgba(13, 71, 161, 0.26);
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        button[type='submit']:hover {
+            background: linear-gradient(135deg, #0A3A7D, #051F47);
+            box-shadow: 0 6px 20px rgba(13, 71, 161, 0.25);
+        }
+
+        .button.secondary {
+            display: block;
+            padding: 12px 14px;
+            background: #FFFFFF;
+            color: #1E2638;
+            border: 1px solid #C8D5EA;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .button.secondary:hover {
+            background: #EFF6FF;
+            border-color: rgba(13, 71, 161, 0.35);
+            color: var(--primary);
+        }
+
+        /* OAuth button */
+        .oauth-actions { display: grid; gap: 12px; margin-bottom: 8px; }
+        .oauth-btn {
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            color: #111827;
+            background: #fff;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 6px 16px rgba(16,24,40,0.06);
+        }
+        .oauth-btn.google:hover { background: #FBFBFB; }
+        .oauth-separator { text-align: center; color: var(--text-muted); font-size: 0.95rem; }
+
+        @media (max-width: 900px) {
+            .shell { grid-template-columns: 1fr; }
+            .hero { min-height: auto; }
+            .stats { grid-template-columns: 1fr; }
+            .hero h1 { font-size: clamp(2.2rem, 8vw, 4rem); }
+        }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <section class="hero">
+            <div>
+                <div class="brand">
+                    <div class="brand-mark">⛽</div>
+                    FuelSync
+                </div>
+                <h1>Sign in to manage your fuel flow.</h1>
+                <p>
+                    Access your receipts, payment history, and fuel purchase tools from one secure dashboard.
+                </p>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <strong>Fast access</strong>
+                    <span>Jump back into your account in seconds.</span>
+                </div>
+                <div class="stat">
+                    <strong>Secure login</strong>
+                    <span>Your personal information is protected.</span>
+                </div>
+                <div class="stat">
+                    <strong>Fuel ready</strong>
+                    <span>Continue straight to purchase and pay.</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Welcome back</h2>
+            <p class="subtitle">Enter your phone number and password to continue.</p>
+
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if form.non_field_errors %}
+                <ul class="errors">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="field">
+                    <label for="id_role">{{ form.role.label }}</label>
+                    <p class="role-field-note">Choose the account type that matches how you access FuelSync.</p>
+                    {{ form.role }}
+                    {% if form.role.errors %}
+                        <ul class="errors" style="margin-top: 10px;">
+                            {% for error in form.role.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label for="id_username">Phone Number</label>
+                    <div class="input-group-phone">
+                        <span class="phone-prefix">+233</span>
+                        {{ form.username }}
+                    </div>
+                    {% if form.username.errors %}
+                        <ul class="errors" style="margin-top: 10px;">
+                            {% for error in form.username.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label for="id_password">Password</label>
+                    <div class="input-wrap">
+                        {{ form.password }}
+                    </div>
+                    {% if form.password.errors %}
+                        <ul class="errors" style="margin-top: 10px;">
+                            {% for error in form.password.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="actions">
+                    <button type="submit" id="loginSubmitBtn">Sign in</button>
+                    <p class="signup-note">Don't have an account? <a href="{% url 'signup' %}" id="signupLink">Sign up</a></p>
+                    <a class="button secondary" href="/home/">Back to Home</a>
+                </div>
+            </form>
+
+        </section>
+    </main>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const pw = document.getElementById('id_password');
+    const loginForm = document.querySelector('form');
+    const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+    if (!pw) return;
+
+    // create toggle button
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'password-toggle';
+    btn.setAttribute('aria-label', 'Show password');
+    btn.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+
+    // append to the input-wrap container (created around the input)
+    const wrap = pw.parentNode;
+    if (wrap && wrap.classList && wrap.classList.contains('input-wrap')) {
+        wrap.appendChild(btn);
+    } else {
+        // fallback to field
+        const field = pw.closest('.field') || pw.parentNode;
+        field.appendChild(btn);
+    }
+
+    btn.addEventListener('click', function () {
+        if (pw.type === 'password') {
+            pw.type = 'text';
+            btn.setAttribute('aria-label', 'Hide password');
+            btn.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.22-5.94" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M1 1l22 22" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>`;
+        } else {
+            pw.type = 'password';
+            btn.setAttribute('aria-label', 'Show password');
+            btn.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>`;
+        }
+    });
+
+    if (loginForm && loginSubmitBtn) {
+        loginForm.addEventListener('submit', function () {
+            loginSubmitBtn.disabled = true;
+            loginSubmitBtn.textContent = 'Signing in...';
+        });
+    }
+
+    // Role selector styling
+    const roleRadios = document.querySelectorAll('.role-selector input[type="radio"]');
+    const signupLink = document.getElementById('signupLink');
+    
+    roleRadios.forEach(radio => {
+        const label = radio.closest('label');
+        if (label) {
+            // Check initial state
+            if (radio.checked) {
+                label.classList.add('selected');
+            }
+            // Listen for changes
+            radio.addEventListener('change', function() {
+                roleRadios.forEach(r => {
+                    const l = r.closest('label');
+                    if (l) l.classList.remove('selected');
+                });
+                if (this.checked) {
+                    label.classList.add('selected');
+                    // Update signup link with selected role
+                    if (signupLink) {
+                        const baseUrl = '{% url "signup" %}';
+                        signupLink.href = baseUrl + '?role=' + this.value;
+                    }
+                }
+            });
+        }
+    });
+});
+</script>
+</html>

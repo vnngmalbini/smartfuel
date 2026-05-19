@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Print Receipt - FuelSync{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .no-print {
+            display: none;
+        }
+    }
+    
+    .print-container {
+        max-width: 400px;
+        margin: 0 auto;
+        background: white;
+        padding: 0;
+    }
+    
+    .print-header {
+        text-align: center;
+        padding: 1.5rem;
+        border-bottom: 2px solid #000;
+    }
+    
+    .print-header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+    
+    .print-header p {
+        margin: 0.25rem 0 0 0;
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .print-body {
+        padding: 1.5rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+    }
+    
+    .receipt-line {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    
+    .receipt-label {
+        flex: 1;
+    }
+    
+    .receipt-value {
+        text-align: right;
+        font-weight: bold;
+    }
+    
+    .receipt-divider {
+        border-top: 1px dashed #000;
+        margin: 0.75rem 0;
+    }
+    
+    .receipt-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin: 0.75rem 0;
+    }
+    
+    .receipt-footer {
+        border-top: 2px solid #000;
+        text-align: center;
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .print-actions {
+        text-align: center;
+        padding: 1rem;
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        no-print: true;
+    }
+    
+    .btn-print {
+        padding: 0.75rem 1.5rem;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+    
+    .btn-print:hover {
+        background: #2980b9;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="print-container">
+    <div class="print-header">
+        <h1>FuelSync</h1>
+        <p>Fuel Station Receipt</p>
+    </div>
+    
+    <div class="print-body">
+        <div class="receipt-line">
+            <span class="receipt-label">Receipt #:</span>
+            <span class="receipt-value">{{ receipt.receipt_number }}</span>
+        </div>
+        
+        <div class="receipt-line">
+            <span class="receipt-label">Date/Time:</span>
+            <span class="receipt-value">{{ transaction.completed_at|date:"d/m/Y H:i" }}</span>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <div class="receipt-line">
+            <span class="receipt-label">{{ transaction.fuel_type.get_name_display }}:</span>
+            <span class="receipt-value">{{ transaction.liters_dispensed|floatformat:2 }} L</span>
+        </div>
+        
+        <div class="receipt-line">
+            <span class="receipt-label">Price/Liter:</span>
+            <span class="receipt-value">GH₵{{ transaction.price_per_liter|floatformat:2 }}</span>
+        </div>
+        
+        <div class="receipt-divider"></div>
+        
+        <div class="receipt-total">
+            <span>Total:</span>
+            <span>GH₵{{ transaction.total_amount|floatformat:2 }}</span>
+        </div>
+        
+        <div class="receipt-line">
+            <span class="receipt-label">Payment:</span>
+            <span class="receipt-value">{{ transaction.get_payment_method_display }}</span>
+        </div>
+        
+        {% if receipt.loyalty_points_earned %}
+        <div class="receipt-divider"></div>
+        <div class="receipt-line">
+            <span class="receipt-label">Loyalty Points:</span>
+            <span class="receipt-value">+{{ receipt.loyalty_points_earned }}</span>
+        </div>
+        {% endif %}
+        
+        <div class="receipt-footer">
+            <p style="margin: 0 0 1rem 0; font-size: 0.85rem;">Thank you for your purchase!</p>
+            <p style="margin: 0; font-size: 0.85rem;">Pump: {{ transaction.pump.pump_number }}</p>
+            <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem;">Ref: {{ transaction.reference_number }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="print-actions no-print">
+    <button class="btn-print" onclick="window.print()">
+        <i class="bi bi-printer"></i> Print
+    </button>
+    <button class="btn-print" style="background: #95a5a6;" onclick="window.history.back()">
+        <i class="bi bi-arrow-left"></i> Back
+    </button>
+</div>
+
+<script>
+// Auto-print on load
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        window.print();
+    }, 500);
+});
+</script>
+{% endblock %}

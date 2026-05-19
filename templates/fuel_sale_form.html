@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Enter Transaction Details - FuelSync{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container {
+        padding: 2rem 0;
+    }
+    
+    .form-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .form-header {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .form-body {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 0 0 8px 8px;
+        padding: 2rem;
+    }
+    
+    .pump-info {
+        background: #f0f9ff;
+        border-left: 4px solid #3498db;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-radius: 4px;
+    }
+    
+    .pump-info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    
+    .pump-info-label {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .pump-info-value {
+        font-weight: 600;
+        color: #1a3a52;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-family: inherit;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #2ecc71;
+        box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
+    }
+    
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .form-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-submit {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        background: #2ecc71;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-submit:hover {
+        background: #27ae60;
+    }
+    
+    .btn-cancel {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        background: #95a5a6;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-cancel:hover {
+        background: #7f8c8d;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .calculated-field {
+        background: #f5f5f5;
+        color: #666;
+    }
+    
+    .price-preview {
+        background: #e8f5e9;
+        border: 1px solid #c8e6c9;
+        border-radius: 4px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .price-row.total {
+        border-top: 1px solid #a5d6a7;
+        padding-top: 0.75rem;
+        margin-top: 0.75rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .help-text {
+        font-size: 0.875rem;
+        color: #666;
+        margin-top: 0.25rem;
+    }
+    
+    .payment-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.5rem;
+    }
+    
+    .payment-option {
+        position: relative;
+    }
+    
+    .payment-option input[type="radio"] {
+        display: none;
+    }
+    
+    .payment-option label {
+        display: block;
+        padding: 0.75rem;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        text-align: center;
+        cursor: pointer;
+        margin: 0;
+        background: white;
+        transition: all 0.3s ease;
+    }
+    
+    .payment-option input[type="radio"]:checked + label {
+        background: #2ecc71;
+        color: white;
+        border-color: #27ae60;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <div class="form-header">
+            <h1><i class="bi bi-receipt-cutoff"></i> Fuel Sale Transaction</h1>
+        </div>
+        
+        <div class="form-body">
+            <!-- Pump Info -->
+            <div class="pump-info">
+                <div class="pump-info-row">
+                    <span class="pump-info-label">Pump:</span>
+                    <span class="pump-info-value">{{ pump.pump_number }}</span>
+                </div>
+                <div class="pump-info-row">
+                    <span class="pump-info-label">Fuel Type:</span>
+                    <span class="pump-info-value">{{ pump.fuel_type.get_name_display }}</span>
+                </div>
+            </div>
+            
+            <!-- Form -->
+            <form method="POST">
+                {% csrf_token %}
+                
+                <!-- Fuel Type -->
+                <div class="form-group">
+                    <label for="id_fuel_type">Fuel Type</label>
+                    {{ form.fuel_type }}
+                    {% if form.fuel_type.errors %}
+                        <div style="color: #e74c3c; margin-top: 0.25rem;">{{ form.fuel_type.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Liters -->
+                <div class="form-group">
+                    <label for="id_liters_dispensed">Liters to Dispense</label>
+                    {{ form.liters_dispensed }}
+                    <div class="help-text">Enter the amount in liters</div>
+                    {% if form.liters_dispensed.errors %}
+                        <div style="color: #e74c3c; margin-top: 0.25rem;">{{ form.liters_dispensed.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Price Preview -->
+                <div class="price-preview" id="pricePreview" style="display:none;">
+                    <div class="price-row">
+                        <span>Liters:</span>
+                        <span id="previewLiters">0</span>
+                    </div>
+                    <div class="price-row">
+                        <span>Price per Liter:</span>
+                        <span id="previewPrice">GH₵0.00</span>
+                    </div>
+                    <div class="price-row total">
+                        <span>Total Amount:</span>
+                        <span id="previewTotal">GH₵0.00</span>
+                    </div>
+                </div>
+                
+                <!-- Payment Method -->
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <div class="payment-options">
+                        {% for value, label in form.payment_method.field.choices %}
+                        <div class="payment-option">
+                            <input type="radio" id="payment_{{ value }}" name="payment_method" value="{{ value }}" 
+                                   {% if form.payment_method.value == value %}checked{% endif %} required>
+                            <label for="payment_{{ value }}">
+                                {% if value == 'cash' %}
+                                    💵 Cash
+                                {% elif value == 'card' %}
+                                    💳 Card
+                                {% elif value == 'mobile_money' %}
+                                    📱 Mobile Money
+                                {% elif value == 'paystack' %}
+                                    🏦 Paystack
+                                {% elif value == 'bank_transfer' %}
+                                    🏛️ Transfer
+                                {% else %}
+                                    {{ label }}
+                                {% endif %}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if form.payment_method.errors %}
+                        <div style="color: #e74c3c; margin-top: 0.25rem;">{{ form.payment_method.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Customer Phone (Optional) -->
+                <div class="form-group">
+                    <label for="id_customer_phone">Customer Phone (Optional)</label>
+                    {{ form.customer_phone }}
+                    <div class="help-text">Optional: If providing customer phone, loyalty points will be tracked</div>
+                </div>
+                
+                <!-- Notes -->
+                <div class="form-group">
+                    <label for="id_notes">Notes (Optional)</label>
+                    {{ form.notes }}
+                    <div class="help-text">Add any additional transaction notes</div>
+                </div>
+                
+                <!-- Buttons -->
+                <div class="form-buttons">
+                    <button type="submit" class="btn-submit">
+                        <i class="bi bi-check-circle"></i> Review & Continue
+                    </button>
+                    <a href="{% url 'start_fuel_sale' %}" class="btn-cancel">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const literInput = document.getElementById('id_liters_dispensed');
+    const fuelTypeSelect = document.getElementById('id_fuel_type');
+    const pricePreview = document.getElementById('pricePreview');
+    
+    function updatePreview() {
+        const liters = parseFloat(literInput.value) || 0;
+        if (liters > 0) {
+            // Use live prices provided by the server
+            const prices = window.fuelPrices || {};
+            const fuelType = fuelTypeSelect.value;
+            const pricePerLiter = parseFloat(prices[fuelType]) || 0.00;
+            const total = liters * pricePerLiter;
+
+            document.getElementById('previewLiters').textContent = liters.toFixed(2);
+            document.getElementById('previewPrice').textContent = 'GH₵' + pricePerLiter.toFixed(2);
+            document.getElementById('previewTotal').textContent = 'GH₵' + total.toFixed(2);
+            pricePreview.style.display = 'block';
+        } else {
+            pricePreview.style.display = 'none';
+        }
+    }
+    
+    literInput.addEventListener('input', updatePreview);
+    fuelTypeSelect.addEventListener('change', updatePreview);
+});
+</script>
+<script>
+// Inject live fuel prices map from server into JS
+window.fuelPrices = {{ fuel_prices_json|safe }};
+</script>
+{% endblock %}

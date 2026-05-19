@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Pumps - FuelSync{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2rem 0;">
+    <h1>Pumps</h1>
+    <p>Operational: <strong>{{ operational_count }}</strong> | Maintenance: <strong>{{ maintenance_count }}</strong> | Offline: <strong>{{ offline_count }}</strong></p>
+
+    <div style="overflow-x: auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f9fafb;">
+                <tr>
+                    <th style="padding: 0.75rem; text-align: left;">Pump</th>
+                    <th style="padding: 0.75rem; text-align: left;">Fuel Type</th>
+                    <th style="padding: 0.75rem; text-align: left;">Status</th>
+                    <th style="padding: 0.75rem; text-align: left;">Total Dispensed (L)</th>
+                    <th style="padding: 0.75rem; text-align: left;">Total Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pump in pumps %}
+                <tr style="border-top: 1px solid #e5e7eb;">
+                    <td style="padding: 0.75rem;">{{ pump.pump_number }}</td>
+                    <td style="padding: 0.75rem;">{{ pump.fuel_type.get_name_display }}</td>
+                    <td style="padding: 0.75rem; text-transform: capitalize;">{{ pump.status }}</td>
+                    <td style="padding: 0.75rem;">{{ pump.total_liters_dispensed|floatformat:2 }}</td>
+                    <td style="padding: 0.75rem;">GH₵{{ pump.total_revenue|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="padding: 1rem; text-align: center; color: #6b7280;">No pumps found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

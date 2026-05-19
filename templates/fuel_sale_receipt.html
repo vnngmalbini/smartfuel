@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Transaction Receipt - FuelSync{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container {
+        padding: 2rem 0;
+    }
+    
+    .receipt-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .receipt-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    .receipt-header {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .success-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .receipt-status {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .receipt-status-desc {
+        font-size: 0.95rem;
+        opacity: 0.9;
+    }
+    
+    .receipt-body {
+        padding: 2rem;
+    }
+    
+    .receipt-section {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .receipt-section:last-child {
+        border-bottom: none;
+    }
+    
+    .receipt-detail {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        padding: 0.25rem 0;
+    }
+    
+    .receipt-label {
+        color: #666;
+    }
+    
+    .receipt-value {
+        font-weight: 600;
+        color: #1a3a52;
+    }
+    
+    .receipt-divider {
+        border-top: 2px dashed #e0e0e0;
+        margin: 1rem 0;
+    }
+    
+    .total-amount {
+        background: #e8f5e9;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+        margin: 1.5rem 0;
+    }
+    
+    .total-label {
+        font-size: 0.9rem;
+        color: #2e7d32;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+    
+    .total-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1b5e20;
+    }
+    
+    .receipt-footer {
+        background: #f5f5f5;
+        padding: 1.5rem;
+        text-align: center;
+        border-top: 1px solid #e0e0e0;
+    }
+    
+    .receipt-number {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 0.5rem;
+    }
+    
+    .receipt-number-value {
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        color: #1a3a52;
+    }
+    
+    .receipt-time {
+        font-size: 0.9rem;
+        color: #999;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-print {
+        background: #3498db;
+        color: white;
+    }
+    
+    .btn-print:hover {
+        background: #2980b9;
+    }
+    
+    .btn-new {
+        background: #2ecc71;
+        color: white;
+    }
+    
+    .btn-new:hover {
+        background: #27ae60;
+    }
+    
+    .btn-dashboard {
+        background: #95a5a6;
+        color: white;
+    }
+    
+    .btn-dashboard:hover {
+        background: #7f8c8d;
+    }
+    
+    .loyalty-earned {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 1rem;
+    }
+    
+    .loyalty-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .loyalty-text {
+        font-weight: 600;
+    }
+    
+    @media print {
+        .action-buttons {
+            display: none;
+        }
+        
+        .receipt-card {
+            box-shadow: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="receipt-container">
+        <div class="receipt-card">
+            <div class="receipt-header">
+                <div class="success-icon">✅</div>
+                <div class="receipt-status">Transaction Successful!</div>
+                <div class="receipt-status-desc">Your fuel has been dispensed and payment received</div>
+            </div>
+            
+            <div class="receipt-body">
+                <!-- Fuel & Quantity -->
+                <div class="receipt-section">
+                    <div class="receipt-detail">
+                        <span class="receipt-label">Fuel Type:</span>
+                        <span class="receipt-value">{{ transaction.fuel_type.get_name_display }}</span>
+                    </div>
+                    <div class="receipt-detail">
+                        <span class="receipt-label">Quantity:</span>
+                        <span class="receipt-value">{{ transaction.liters_dispensed|floatformat:2 }} Liters</span>
+                    </div>
+                    <div class="receipt-detail">
+                        <span class="receipt-label">Price per Liter:</span>
+                        <span class="receipt-value">GH₵{{ transaction.price_per_liter|floatformat:2 }}</span>
+                    </div>
+                </div>
+                
+                <!-- Amount Details -->
+                <div class="total-amount">
+                    <div class="total-label">Total Amount Paid</div>
+                    <div class="total-value">GH₵{{ transaction.total_amount|floatformat:2 }}</div>
+                </div>
+                
+                <!-- Payment Info -->
+                <div class="receipt-section">
+                    <div class="receipt-detail">
+                        <span class="receipt-label">Payment Method:</span>
+                        <span class="receipt-value">{{ transaction.get_payment_method_display }}</span>
+                    </div>
+                    <div class="receipt-detail">
+                        <span class="receipt-label">Transaction ID:</span>
+                        <span class="receipt-value"><code>{{ transaction.transaction_id }}</code></span>
+                    </div>
+                    <div class="receipt-detail">
+                        <span class="receipt-label">Reference:</span>
+                        <span class="receipt-value"><code>{{ transaction.reference_number }}</code></span>
+                    </div>
+                </div>
+                
+                <!-- Pump & Staff Info -->
+                <div class="receipt-section">
+                    <div class="receipt-detail">
+                        <span class="receipt-label">Pump:</span>
+                        <span class="receipt-value">{{ transaction.pump.pump_number }}</span>
+                    </div>
+                    {% if transaction.staff %}
+                    <div class="receipt-detail">
+                        <span class="receipt-label">Attendant:</span>
+                        <span class="receipt-value">{{ transaction.staff.user.get_full_name }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="receipt-detail">
+                        <span class="receipt-label">Time:</span>
+                        <span class="receipt-value">{{ transaction.completed_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                </div>
+                
+                <!-- Loyalty Points (if earned) -->
+                {% if receipt.loyalty_points_earned %}
+                <div class="loyalty-earned">
+                    <div class="loyalty-icon">🎁</div>
+                    <div class="loyalty-text">
+                        +{{ receipt.loyalty_points_earned }} Loyalty Points Earned!
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="receipt-footer">
+                <div class="receipt-number">Receipt Number:</div>
+                <div class="receipt-number-value">{{ receipt.receipt_number }}</div>
+                <div class="receipt-time">{{ transaction.created_at|date:"d M Y, H:i:s" }}</div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{% url 'fuel_sale_print_receipt' receipt.id %}" class="btn btn-print" target="_blank">
+                <i class="bi bi-printer"></i> Print Receipt
+            </a>
+            <a href="{% url 'start_fuel_sale' %}" class="btn btn-new">
+                <i class="bi bi-plus-circle"></i> New Transaction
+            </a>
+            <a href="{% url 'attendant_dashboard' %}" class="btn btn-dashboard">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+window.addEventListener('load', function() {
+    // Show success notification
+    const notification = document.createElement('div');
+    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:#27ae60;color:white;padding:1rem 1.5rem;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.2);z-index:9999;font-weight:500;';
+    notification.innerHTML = '<i class="bi bi-check-circle"></i> Transaction completed successfully! Redirecting to dashboard...';
+    document.body.appendChild(notification);
+    
+    // Auto-redirect to dashboard after 3 seconds
+    setTimeout(function() {
+        window.location.href = "{% url 'attendant_dashboard' %}";
+    }, 3000);
+});
+</script>
+{% endblock %}

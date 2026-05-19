@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Review Transaction - FuelSync{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container {
+        padding: 2rem 0;
+    }
+    
+    .review-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .review-header {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px 8px 0 0;
+        text-align: center;
+    }
+    
+    .review-body {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 0 0 8px 8px;
+        padding: 2rem;
+    }
+    
+    .review-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .review-section:last-child {
+        border-bottom: none;
+    }
+    
+    .section-title {
+        font-size: 0.95rem;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        padding: 0.5rem 0;
+    }
+    
+    .detail-label {
+        color: #666;
+    }
+    
+    .detail-value {
+        font-weight: 600;
+        color: #1a3a52;
+    }
+    
+    .amount-section {
+        background: #e8f5e9;
+        border: 2px solid #81c784;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .amount-label {
+        font-size: 0.9rem;
+        color: #2e7d32;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+    
+    .amount-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1b5e20;
+    }
+    
+    .form-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-confirm {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        background: #27ae60;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-confirm:hover {
+        background: #229954;
+    }
+    
+    .btn-edit {
+        flex: 1;
+        padding: 0.75rem 1.5rem;
+        background: #95a5a6;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-edit:hover {
+        background: #7f8c8d;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .info-banner {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-radius: 4px;
+        color: #1565c0;
+    }
+    
+    .info-banner i {
+        margin-right: 0.5rem;
+    }
+    
+    .staff-info {
+        background: #f5f5f5;
+        padding: 1rem;
+        border-radius: 4px;
+    }
+    
+    .icon {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        margin-right: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="review-container">
+        <div class="review-header">
+            <h1><i class="bi bi-eye"></i> Review Transaction</h1>
+            <p>Please verify all details before completing</p>
+        </div>
+        
+        <div class="review-body">
+            <!-- Amount Preview -->
+            <div class="amount-section">
+                <div class="amount-label">Total Amount Due</div>
+                <div class="amount-value">GH₵{{ total_amount|floatformat:2 }}</div>
+            </div>
+            
+            <!-- Pump & Fuel -->
+            <div class="review-section">
+                <div class="section-title"><i class="bi bi-fuel-pump"></i> Pump & Fuel</div>
+                <div class="detail-row">
+                    <span class="detail-label">Pump Number:</span>
+                    <span class="detail-value">{{ pump.pump_number }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Fuel Type:</span>
+                    <span class="detail-value">{{ fuel_type.get_name_display }}</span>
+                </div>
+            </div>
+            
+            <!-- Transaction Details -->
+            <div class="review-section">
+                <div class="section-title"><i class="bi bi-receipt"></i> Transaction Details</div>
+                <div class="detail-row">
+                    <span class="detail-label">Liters:</span>
+                    <span class="detail-value">{{ liters|floatformat:2 }} L</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Price per Liter:</span>
+                    <span class="detail-value">GH₵{{ price_per_liter|floatformat:2 }}</span>
+                </div>
+                <div class="detail-row" style="border-top: 1px solid #e0e0e0; padding-top: 0.75rem;">
+                    <span class="detail-label"><strong>Total Amount:</strong></span>
+                    <span class="detail-value" style="font-size: 1.2rem;">GH₵{{ total_amount|floatformat:2 }}</span>
+                </div>
+            </div>
+            
+            <!-- Payment Method -->
+            <div class="review-section">
+                <div class="section-title"><i class="bi bi-wallet2"></i> Payment Method</div>
+                <div class="detail-row">
+                    <span class="detail-label">Method:</span>
+                    <span class="detail-value">{{ payment_method|upper }}</span>
+                </div>
+            </div>
+            
+            <!-- Customer Info (if provided) -->
+            {% if customer %}
+            <div class="review-section">
+                <div class="section-title"><i class="bi bi-person"></i> Customer</div>
+                <div class="detail-row">
+                    <span class="detail-label">Name:</span>
+                    <span class="detail-value">{{ customer.first_name }} {{ customer.last_name }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Phone:</span>
+                    <span class="detail-value">{{ customer.phone }}</span>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Staff Info -->
+            {% if staff %}
+            <div class="review-section">
+                <div class="section-title"><i class="bi bi-person-badge"></i> Staff</div>
+                <div class="detail-row">
+                    <span class="detail-label">Attendant:</span>
+                    <span class="detail-value">{{ staff.user.get_full_name }}</span>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Info Banner -->
+            <div class="info-banner">
+                <i class="bi bi-info-circle"></i>
+                <strong>Important:</strong> Please verify all details above are correct before confirming the transaction.
+            </div>
+            
+            <!-- Buttons -->
+            <form method="POST" action="{% url 'fuel_sale_complete' %}" style="display: inline-block; width: 100%;">
+                {% csrf_token %}
+                <div class="form-buttons">
+                    <button type="submit" class="btn-confirm">
+                        <i class="bi bi-check-circle"></i> Confirm & Complete
+                    </button>
+                    <a href="{% url 'fuel_sale_form' pump.id %}" class="btn-edit">
+                        <i class="bi bi-pencil"></i> Edit Details
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,603 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Customer Dashboard - FuelSync{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #0D47A1;
+        --primary-light: #1565C0;
+        --primary-dark: #051D48;
+        --accent: #FF7A00;
+        --accent-light: #FFB84D;
+        --success: #10B981;
+        --warning: #F59E0B;
+        --bg: #F8FAFB;
+        --bg-light: #FFFFFF;
+        --text: #1F2937;
+        --text-muted: #6B7280;
+        --border: #E5E7EB;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .dashboard-container {
+        padding: 2.5rem 0;
+        background: var(--bg);
+        min-height: 100vh;
+    }
+    
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 16px;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .dashboard-header h1 {
+        font-size: 2.2rem;
+        margin: 0;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .dashboard-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.95;
+        font-size: 1.05rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+    
+    .summary-card {
+        background: var(--bg-light);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .summary-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: rgba(13, 71, 161, 0.2);
+    }
+
+    .summary-card:hover::before {
+        opacity: 1;
+    }
+    
+    .card-label {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    
+    .card-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        letter-spacing: -1px;
+        margin: 0.5rem 0;
+    }
+    
+    .card-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
+        display: inline-block;
+        background: linear-gradient(135deg, rgba(13, 71, 161, 0.1), rgba(255, 122, 0, 0.05));
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 2.5rem 0 1.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        letter-spacing: -0.5px;
+    }
+    
+    .section-title i {
+        color: var(--primary);
+        font-size: 1.5rem;
+    }
+    
+    .content-section {
+        background: var(--bg-light);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s ease;
+    }
+
+    .content-section:hover {
+        box-shadow: var(--shadow-md);
+        border-color: rgba(13, 71, 161, 0.15);
+    }
+    
+    .transaction-row {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+
+    .transaction-row:hover {
+        background: linear-gradient(90deg, rgba(13, 71, 161, 0.02), rgba(255, 122, 0, 0.01));
+    }
+    
+    .transaction-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .transaction-details {
+        flex: 1;
+    }
+    
+    .transaction-fuel {
+        font-weight: 700;
+        color: var(--text);
+        font-size: 1.05rem;
+    }
+    
+    .transaction-meta {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: 0.4rem;
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .transaction-amount {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--success);
+        margin-left: 2rem;
+        white-space: nowrap;
+    }
+    
+    .loyalty-section {
+        background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
+        color: white;
+        padding: 2.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 3rem;
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .loyalty-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .loyalty-section > * {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .loyalty-title {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .loyalty-points {
+        font-size: 3rem;
+        font-weight: 700;
+        margin: 1rem 0;
+        letter-spacing: -1px;
+    }
+    
+    .loyalty-info {
+        font-size: 0.95rem;
+        opacity: 0.95;
+        line-height: 1.6;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.6;
+    }
+
+    .empty-state p:first-of-type {
+        font-size: 1.2rem;
+        color: var(--text);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .action-button {
+        display: inline-block;
+        padding: 0.875rem 1.75rem;
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        color: white;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(13, 71, 161, 0.25);
+        font-size: 0.95rem;
+    }
+    
+    .action-button:hover {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(13, 71, 161, 0.35);
+    }
+
+    .action-button:active {
+        transform: translateY(0);
+    }
+    
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .stat-box {
+        text-align: center;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        opacity: 0.85;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-top: 0.5rem;
+    }
+
+    /* Account info improvements */
+    .account-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-field {
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 1rem;
+    }
+
+    .info-field label {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        display: block;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-field div {
+        font-weight: 600;
+        color: var(--text);
+        font-size: 1.05rem;
+    }
+
+    /* Help section styling */
+    .help-section {
+        background: linear-gradient(135deg, rgba(13, 71, 161, 0.08) 0%, rgba(255, 122, 0, 0.04) 100%);
+        border: 1px solid rgba(13, 71, 161, 0.15);
+        border-radius: 12px;
+        padding: 2rem;
+    }
+
+    .help-section h3 {
+        color: var(--primary);
+        font-size: 1.15rem;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .help-section ul {
+        margin: 0;
+        padding-left: 1.5rem;
+        list-style: none;
+    }
+
+    .help-section li {
+        color: var(--text);
+        margin-bottom: 1rem;
+        position: relative;
+        padding-left: 1.25rem;
+        line-height: 1.6;
+    }
+
+    .help-section li::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: var(--success);
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .help-section li:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+        .summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .stats-row {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .transaction-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .transaction-amount {
+            margin-left: 0;
+            margin-top: 1rem;
+        }
+
+        .dashboard-header {
+            padding: 2rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.75rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .account-info-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h1><i class="bi bi-person-check-fill"></i> Your Dashboard</h1>
+        <p>Your fuel purchase history and loyalty rewards</p>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="card-icon">💰</div>
+            <div class="card-label">Total Spent</div>
+            <div class="card-value">GH₵{{ total_spent|floatformat:0 }}</div>
+        </div>
+        
+        <div class="summary-card">
+            <div class="card-icon">⛽</div>
+            <div class="card-label">Total Purchased</div>
+            <div class="card-value">{{ total_liters|floatformat:0 }} L</div>
+        </div>
+        
+        <div class="summary-card">
+            <div class="card-icon">🧾</div>
+            <div class="card-label">Visits</div>
+            <div class="card-value">{{ total_visits }}</div>
+        </div>
+        
+        <div class="summary-card">
+            <div class="card-icon">⭐</div>
+            <div class="card-label">Avg per Visit</div>
+            <div class="card-value">GH₵{{ average_spent_per_visit|floatformat:0 }}</div>
+        </div>
+    </div>
+    
+    <!-- Loyalty Rewards -->
+    <div class="loyalty-section">
+        <div class="loyalty-title"><i class="bi bi-gift-fill"></i> Loyalty Rewards</div>
+        <div class="loyalty-points">{{ loyalty_points }} Points</div>
+        <div class="loyalty-info">
+            You're earning rewards with every purchase! Earn 1 point per liter of fuel.
+        </div>
+        <div class="stats-row" style="color: white;">
+            <div class="stat-box">
+                <div class="stat-label">Current Tier</div>
+                <div class="stat-value">Standard</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Next Tier</div>
+                <div class="stat-value">500 pts</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Points to Next</div>
+                <div class="stat-value">{{ points_to_next_tier }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Purchases -->
+    <div class="content-section">
+        <h2 class="section-title"><i class="bi bi-receipt-cutoff"></i> Recent Purchases</h2>
+        
+        {% if recent_transactions %}
+        <div>
+            {% for txn in recent_transactions %}
+            <div class="transaction-row">
+                <div class="transaction-details">
+                    <div class="transaction-fuel">{{ txn.fuel_type.get_name_display }}</div>
+                    <div class="transaction-meta">
+                        {{ txn.liters_dispensed|floatformat:2 }} liters from Pump {{ txn.pump.pump_number }}
+                    </div>
+                    <div class="transaction-meta">{{ txn.created_at|date:"d M Y, H:i" }}</div>
+                </div>
+                <div class="transaction-amount">
+                    GH₵{{ txn.total_amount|floatformat:2 }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+            <a href="/admin/station/transaction/" class="action-button">View All Transactions</a>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <p>No purchase history yet</p>
+            <p style="font-size: 0.9rem; margin-top: 0.5rem;">Start by visiting our fuel station</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Account Info -->
+    <div class="content-section">
+        <h2 class="section-title"><i class="bi bi-person-circle"></i> Account Information</h2>
+        {% if customer %}
+        <div class="account-info-grid">
+            <div class="info-field">
+                <label>Name</label>
+                <div>{{ customer.first_name }} {{ customer.last_name }}</div>
+            </div>
+            <div class="info-field">
+                <label>Phone</label>
+                <div>{{ customer.phone }}</div>
+            </div>
+            <div class="info-field">
+                <label>Email</label>
+                <div>{{ customer.email|default:"Not provided" }}</div>
+            </div>
+            <div class="info-field">
+                <label>Member Since</label>
+                <div>{{ customer.created_at|date:"d M Y" }}</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+            <a href="{% url 'profile' %}" class="action-button"><i class="bi bi-pencil"></i> Edit Profile</a>
+        </div>
+        {% else %}
+        <p style="color: var(--text-muted);">Customer profile not found. Please contact support.</p>
+        {% endif %}
+    </div>
+    
+    <!-- Help & Support -->
+    <div class="content-section help-section">
+        <h3><i class="bi bi-question-circle"></i> Need Help?</h3>
+        <ul>
+            <li>All transactions are recorded and can be viewed from this dashboard</li>
+            <li>Your loyalty points are automatically calculated</li>
+            <li>You can redeem points for discounts on future purchases</li>
+            <li>For more information, contact our support team</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

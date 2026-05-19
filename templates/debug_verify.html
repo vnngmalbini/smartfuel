@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Paystack Verify Debug</title>
+    <style>body{font-family:Arial;margin:20px;} pre{background:#f4f4f4;padding:15px;border-radius:6px;overflow:auto}</style>
+</head>
+<body>
+    <h2>Paystack Verify Response</h2>
+    {% if reference %}
+        <p><strong>Reference:</strong> {{ reference }}</p>
+    {% else %}
+        <p>No reference provided.</p>
+    {% endif %}
+
+    {% if result %}
+        <pre>{{ result|safe }}</pre>
+    {% else %}
+        <p>No verify result available. Trigger a payment first.</p>
+    {% endif %}
+</body>
+</html>

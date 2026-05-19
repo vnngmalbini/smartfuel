@@ -1,0 +1,646 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard - FuelSync{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --admin-bg: #f5f7fb;
+        --admin-surface: rgba(255, 255, 255, 0.94);
+        --admin-surface-strong: #ffffff;
+        --admin-text: #0f172a;
+        --admin-muted: #64748b;
+        --admin-primary: #1d4ed8;
+        --admin-primary-2: #2563eb;
+        --admin-accent: #0f766e;
+        --admin-warm: #b45309;
+        --admin-danger: #b91c1c;
+        --admin-border: rgba(15, 23, 42, 0.08);
+        --admin-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+
+    .admin-shell {
+        padding: 28px 0 40px;
+        background:
+            radial-gradient(circle at top right, rgba(37, 99, 235, 0.08), transparent 24%),
+            radial-gradient(circle at left center, rgba(15, 118, 110, 0.05), transparent 20%),
+            var(--admin-bg);
+    }
+
+    .admin-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px;
+        padding: 28px;
+        color: #fff;
+        background:
+            radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 24%),
+            linear-gradient(135deg, #0f172a 0%, #123a72 52%, #1d4ed8 100%);
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+        margin-bottom: 24px;
+    }
+
+    .admin-hero::after {
+        content: '';
+        position: absolute;
+        inset: auto -18% -42% auto;
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        filter: blur(6px);
+    }
+
+    .admin-hero__eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .admin-hero h1 {
+        margin: 16px 0 10px;
+        font-size: clamp(2rem, 3vw, 3.15rem);
+        letter-spacing: -0.04em;
+        line-height: 1.05;
+        color: #ffffff !important;
+        text-shadow: 0 2px 12px rgba(15, 23, 42, 0.18);
+    }
+
+    .admin-hero p {
+        margin: 0;
+        max-width: 60ch;
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-size: 1.02rem;
+    }
+
+    .admin-hero__meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
+        font-size: 0.92rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .kpi-card {
+        background: var(--admin-surface-strong);
+        border: 1px solid var(--admin-border);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: var(--admin-shadow);
+        min-height: 140px;
+        display: grid;
+        gap: 12px;
+    }
+
+    .kpi-card__top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .kpi-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 1.2rem;
+    }
+
+    .kpi-card--blue .kpi-icon { background: linear-gradient(135deg, #1d4ed8, #60a5fa); }
+    .kpi-card--green .kpi-icon { background: linear-gradient(135deg, #0f766e, #2dd4bf); }
+    .kpi-card--amber .kpi-icon { background: linear-gradient(135deg, #b45309, #f59e0b); }
+    .kpi-card--red .kpi-icon { background: linear-gradient(135deg, #b91c1c, #f87171); }
+    .kpi-card--slate .kpi-icon { background: linear-gradient(135deg, #334155, #64748b); }
+
+    .kpi-label {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--admin-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+    }
+
+    .kpi-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--admin-text);
+        letter-spacing: -0.04em;
+        margin-top: 8px;
+    }
+
+    .kpi-card--red .kpi-value {
+        color: #b91c1c;
+    }
+
+    .section-grid {
+        display: grid;
+        grid-template-columns: 1.3fr 0.9fr;
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .content-section {
+        background: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: var(--admin-shadow);
+    }
+
+    .content-section--full {
+        margin-bottom: 24px;
+    }
+
+    .section-title {
+        font-size: 1.08rem;
+        font-weight: 800;
+        color: var(--admin-text);
+        margin: 0 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+    }
+
+    .section-title i {
+        color: var(--admin-primary);
+    }
+
+    .subtle-note {
+        color: var(--admin-muted);
+        font-size: 0.92rem;
+        margin: -8px 0 16px;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .fuel-status-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .fuel-status-table thead th {
+        position: sticky;
+        top: 0;
+        background: #f8fafc;
+        border-bottom: 1px solid var(--admin-border);
+        color: #475569;
+        font-size: 0.78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.11em;
+        padding: 14px 12px;
+    }
+
+    .fuel-status-table td {
+        padding: 14px 12px;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+        color: var(--admin-text);
+        vertical-align: middle;
+    }
+
+    .fuel-status-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.42rem 0.78rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .status-ok {
+        background: #ecfdf5;
+        color: #15803d;
+    }
+
+    .status-low {
+        background: #fffbeb;
+        color: #b45309;
+    }
+
+    .status-critical {
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    .progress-bar-container {
+        width: 100%;
+        background: #e2e8f0;
+        border-radius: 999px;
+        height: 8px;
+        overflow: hidden;
+        margin-bottom: 6px;
+    }
+
+    .progress-bar-fill {
+        background: linear-gradient(90deg, var(--admin-primary) 0%, #22c55e 100%);
+        height: 100%;
+        border-radius: 999px;
+    }
+
+    .pump-status-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .pump-status-item {
+        background: linear-gradient(180deg, #ffffff, #f8fafc);
+        border: 1px solid var(--admin-border);
+        border-radius: 18px;
+        padding: 16px;
+        text-align: center;
+    }
+
+    .pump-status-item .status-number {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.04em;
+    }
+
+    .pump-status-item .status-label {
+        font-size: 0.84rem;
+        color: var(--admin-muted);
+        margin-top: 0.35rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .alert-panel {
+        border-left: 4px solid #f59e0b;
+        background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%);
+    }
+
+    .alert-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .alert-list li {
+        padding: 0.8rem 0;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .alert-list li:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .admin-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .admin-action-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0.78rem 1rem;
+        background: #0f172a;
+        color: #fff;
+        border-radius: 14px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.15);
+    }
+
+    .admin-action-button:hover {
+        transform: translateY(-1px);
+        background: #2563eb;
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .admin-action-button.secondary {
+        background: #1d4ed8;
+    }
+
+    .admin-action-button.secondary:hover {
+        background: #1d4ed8;
+    }
+
+    .admin-action-button.danger {
+        background: #b91c1c;
+    }
+
+    .admin-action-button.danger:hover {
+        background: #991b1b;
+    }
+
+    @media (max-width: 992px) {
+        .section-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .pump-status-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .admin-shell {
+            padding-top: 18px;
+        }
+
+        .admin-hero,
+        .content-section {
+            padding: 18px;
+            border-radius: 18px;
+        }
+
+        .admin-hero h1 {
+            font-size: 1.8rem;
+        }
+
+        .kpi-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container admin-shell">
+    <section class="admin-hero">
+        <div class="admin-hero__eyebrow"><i class="bi bi-shield-check"></i> Admin dashboard</div>
+        <h1>System-wide management and oversight</h1>
+        <p>Track revenue, transactions, stock, pumps, and staff from one calm, readable control surface.</p>
+        <div class="admin-hero__meta">
+            <div class="meta-pill"><i class="bi bi-cash-coin"></i> Today: GH₵{{ today_revenue|floatformat:0 }}</div>
+            <div class="meta-pill"><i class="bi bi-receipt"></i> Transactions: {{ total_transactions }}</div>
+            <div class="meta-pill"><i class="bi bi-people"></i> Customers: {{ total_customers }}</div>
+            <div class="meta-pill"><i class="bi bi-broadcast"></i> Active pumps: {{ active_pumps }}</div>
+        </div>
+    </section>
+
+    <div class="kpi-grid">
+        <div class="kpi-card kpi-card--blue">
+            <div class="kpi-card__top">
+                <div class="kpi-icon"><i class="bi bi-cash-coin"></i></div>
+            </div>
+            <div class="kpi-label">Today's Revenue</div>
+            <div class="kpi-value">GH₵{{ today_revenue|floatformat:0 }}</div>
+        </div>
+        
+        <div class="kpi-card kpi-card--green">
+            <div class="kpi-card__top">
+                <div class="kpi-icon"><i class="bi bi-bar-chart-line"></i></div>
+            </div>
+            <div class="kpi-label">Total Revenue (All Time)</div>
+            <div class="kpi-value">GH₵{{ total_revenue|floatformat:0 }}</div>
+        </div>
+        
+        <div class="kpi-card kpi-card--slate">
+            <div class="kpi-card__top">
+                <div class="kpi-icon"><i class="bi bi-receipt-cutoff"></i></div>
+            </div>
+            <div class="kpi-label">Total Transactions</div>
+            <div class="kpi-value">{{ total_transactions }}</div>
+        </div>
+        
+        <div class="kpi-card kpi-card--blue">
+            <div class="kpi-card__top">
+                <div class="kpi-icon"><i class="bi bi-people"></i></div>
+            </div>
+            <div class="kpi-label">Registered Customers</div>
+            <div class="kpi-value">{{ total_customers }}</div>
+        </div>
+        
+        <div class="kpi-card kpi-card--green">
+            <div class="kpi-card__top">
+                <div class="kpi-icon"><i class="bi bi-person-badge"></i></div>
+            </div>
+            <div class="kpi-label">Active Staff</div>
+            <div class="kpi-value">{{ total_staff }}</div>
+        </div>
+        
+        <div class="kpi-card kpi-card--red">
+            <div class="kpi-card__top">
+                <div class="kpi-icon"><i class="bi bi-exclamation-triangle"></i></div>
+            </div>
+            <div class="kpi-label">Low Stock Alerts</div>
+            <div class="kpi-value" style="color: #d32f2f;">{{ low_stock_count }}</div>
+        </div>
+    </div>
+    
+    <div class="section-grid">
+        <div class="content-section">
+            <h2 class="section-title"><i class="bi bi-fuel-pump"></i> Pump Status Overview</h2>
+            <p class="subtle-note">Quick operational snapshot for the active station equipment.</p>
+            <div class="pump-status-grid">
+                <div class="pump-status-item">
+                    <div class="status-number">{{ pump_status.operational }}</div>
+                    <div class="status-label">Operational</div>
+                </div>
+                <div class="pump-status-item">
+                    <div class="status-number">{{ pump_status.maintenance }}</div>
+                    <div class="status-label">Maintenance</div>
+                </div>
+                <div class="pump-status-item">
+                    <div class="status-number">{{ pump_status.offline }}</div>
+                    <div class="status-label">Offline</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-section alert-panel">
+            <h2 class="section-title"><i class="bi bi-exclamation-triangle"></i> Low Stock Alerts</h2>
+            <p class="subtle-note">Items that need attention before stock runs critical.</p>
+            {% if low_stock_fuels %}
+            <ul class="alert-list">
+                {% for fuel in low_stock_fuels %}
+                <li>
+                    <div>
+                        <strong>{{ fuel.fuel_type.get_name_display }}</strong><br>
+                        <small style="color:#64748b;">Minimum {{ fuel.min_threshold|floatformat:0 }} L</small>
+                    </div>
+                    <span class="status-badge status-low">{{ fuel.quantity_liters|floatformat:2 }} L</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="status-badge status-ok" style="margin-top:4px;">No low stock alerts</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Fuel Inventory Management -->
+    <div class="content-section content-section--full">
+        <h2 class="section-title"><i class="bi bi-droplet-fill"></i> Fuel Inventory Management</h2>
+        <p class="subtle-note">Stock, capacity, and pricing in one view.</p>
+        <div class="table-responsive">
+            <table class="fuel-status-table">
+                <thead>
+                    <tr>
+                        <th>Fuel Type</th>
+                        <th>Current Stock</th>
+                        <th>Max Capacity</th>
+                        <th>Percentage</th>
+                        <th>Price per Liter</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fuel in fuel_inventories %}
+                    <tr>
+                        <td><strong>{{ fuel.fuel_type.get_name_display }}</strong></td>
+                        <td>{{ fuel.quantity_liters|floatformat:2 }} L</td>
+                        <td>{{ fuel.max_capacity|floatformat:0 }} L</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" style="width: {% widthratio fuel.quantity_liters fuel.max_capacity 100 %}%"></div>
+                            </div>
+                            {% widthratio fuel.quantity_liters fuel.max_capacity 100 %}%
+                        </td>
+                        <td>GH₵{{ fuel.fuel_type.current_price|floatformat:2 }}</td>
+                        <td>
+                            {% if fuel.is_low_stock %}
+                                <span class="status-badge status-low">Low Stock</span>
+                            {% else %}
+                                <span class="status-badge status-ok">OK</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/admin/station/fuelinventory/{{ fuel.id }}/change/" class="admin-action-button">Edit</a>
+                            <a href="/admin/station/fueltype/{{ fuel.fuel_type.id }}/change/" class="admin-action-button">Set Price</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem; color: #64748b;">No fuel inventory data</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Fuel Prices Management -->
+    <div class="content-section content-section--full">
+        <h2 class="section-title"><i class="bi bi-tag-fill"></i> Fuel Price Management</h2>
+        <p class="subtle-note">Keep station pricing current and consistent.</p>
+        <div class="table-responsive">
+            <table class="fuel-status-table">
+                <thead>
+                    <tr>
+                        <th>Fuel Type</th>
+                        <th>Current Price</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fuel_type in fuel_types %}
+                    <tr>
+                        <td><strong>{{ fuel_type.get_name_display }}</strong></td>
+                        <td>GH₵{{ fuel_type.current_price|floatformat:2 }}</td>
+                        <td>{{ fuel_type.price_updated_at|date:"d M Y, H:i" }}</td>
+                        <td>
+                            <a href="/admin/station/fueltype/{{ fuel_type.id }}/change/" class="admin-action-button">Update Price</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Recent Transactions -->
+    <div class="content-section content-section--full">
+        <h2 class="section-title"><i class="bi bi-receipt-cutoff"></i> Recent Transactions</h2>
+        <p class="subtle-note">The latest completed sales recorded in the system.</p>
+        <div class="table-responsive">
+            <table class="fuel-status-table">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Pump</th>
+                        <th>Fuel Type</th>
+                        <th>Liters</th>
+                        <th>Amount</th>
+                        <th>Payment Method</th>
+                        <th>Staff</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for txn in recent_transactions %}
+                    <tr>
+                        <td><code>{{ txn.transaction_id }}</code></td>
+                        <td>{{ txn.pump.pump_number }}</td>
+                        <td>{{ txn.fuel_type.get_name_display }}</td>
+                        <td>{{ txn.liters_dispensed|floatformat:2 }} L</td>
+                        <td>GH₵{{ txn.total_amount|floatformat:2 }}</td>
+                        <td><span class="status-badge status-ok">{{ txn.get_payment_method_display }}</span></td>
+                        <td>{{ txn.staff.user.get_full_name|default:"Auto" }}</td>
+                        <td>{{ txn.created_at|date:"d M, H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 2rem; color: #64748b;">No transactions today</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Admin Actions -->
+    <div class="content-section content-section--full">
+        <h2 class="section-title"><i class="bi bi-gear-fill"></i> Admin Actions</h2>
+        <p class="subtle-note">Shortcuts to the operational tools you use most.</p>
+        <div class="admin-actions">
+            <a href="/admin/" class="admin-action-button"><i class="bi bi-gear"></i> Django Admin Panel</a>
+            <a href="/admin/auth/user/" class="admin-action-button secondary"><i class="bi bi-people-fill"></i> Manage Users</a>
+            <a href="/admin/station/staff/" class="admin-action-button secondary"><i class="bi bi-person-badge"></i> Manage Staff</a>
+            <a href="/admin/station/pump/" class="admin-action-button"><i class="bi bi-fuel-pump"></i> Manage Pumps</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

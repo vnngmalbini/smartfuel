@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <link rel="stylesheet" href="{% static 'css/ui-base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/professional-polish.css' %}">
+    <style>
+        :root {
+            --primary: #0D47A1;
+            --primary-dark: #0A3A7D;
+            --accent: #FF7A00;
+            --bg: #F8F9FB;
+            --text: #1A202C;
+            --muted: #718096;
+            --panel: #FFFFFF;
+            --panel-border: #E2E8F0;
+            --shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+            --gradient-primary: linear-gradient(135deg, #0B2D5C 0%, #0D47A1 48%, #1565C0 100%);
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); }
+        header { background: var(--panel); border-bottom: 1px solid var(--panel-border); box-shadow: 0 4px 12px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 10; }
+        nav { max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 74px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: var(--primary); font-weight: 800; }
+        .logo-mark { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; color: #fff; background: var(--gradient-primary); }
+        .nav-links { display: flex; gap: 14px; flex-wrap: wrap; }
+        .nav-links a, .nav-links .active { text-decoration: none; color: var(--text); padding: 10px 14px; border-radius: 999px; border: 1px solid var(--panel-border); background: #fff; font-weight: 700; font-size: 0.95rem; }
+        .nav-links .active { background: rgba(13,71,161,0.08); border-color: rgba(13,71,161,0.16); color: var(--primary); }
+        main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 72px; }
+        .hero { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 22px; box-shadow: var(--shadow); padding: 32px; }
+        .tag { display: inline-flex; margin-bottom: 14px; padding: 7px 12px; border-radius: 999px; background: rgba(255,122,0,0.10); color: #C24A00; border: 1px solid rgba(255,122,0,0.18); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
+        h1 { margin: 0 0 12px; font-size: clamp(2rem, 4vw, 3.3rem); line-height: 1.08; }
+        .summary { margin: 0; max-width: 70ch; color: var(--muted); line-height: 1.7; font-size: 1.02rem; }
+        .contact-grid { display: grid; gap: 20px; grid-template-columns: 0.9fr 1.1fr; margin-top: 24px; }
+        .panel { background: #fff; border: 1px solid var(--panel-border); border-radius: 18px; padding: 24px; box-shadow: 0 10px 24px rgba(16,24,40,0.06); }
+        .panel h2, .panel h3 { margin-top: 0; }
+        .panel p { color: var(--muted); line-height: 1.7; }
+        .info-list { display: grid; gap: 12px; margin-top: 18px; }
+        .info-item { padding: 14px 16px; border-radius: 14px; border: 1px solid var(--panel-border); background: #F9FAFB; }
+        .info-item strong { display: block; margin-bottom: 4px; }
+        .form-group { margin-bottom: 14px; }
+        label { display: block; margin-bottom: 6px; font-weight: 700; }
+        input, textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--panel-border); border-radius: 12px; font: inherit; background: #fff; color: var(--text); }
+        textarea { min-height: 140px; resize: vertical; }
+        .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 11px 16px; border-radius: 12px; font-weight: 800; text-decoration: none; border: none; cursor: pointer; }
+        .btn-primary { color: #fff; background: var(--gradient-primary); }
+        .btn-secondary { color: var(--primary); background: #fff; border: 1px solid rgba(13,71,161,0.18); }
+        .back { display: inline-flex; margin-top: 18px; text-decoration: none; color: #fff; background: var(--gradient-primary); padding: 11px 16px; border-radius: 12px; font-weight: 800; box-shadow: 0 10px 22px rgba(13,71,161,0.18); }
+        @media (max-width: 900px) { .contact-grid { grid-template-columns: 1fr; } nav { height: auto; padding: 18px 20px; gap: 16px; flex-direction: column; align-items: flex-start; } .actions { flex-direction: column; } }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="/home/" class="logo"><span class="logo-mark">⛽</span>FuelSync</a>
+        <div class="nav-links">
+            <a href="/about/">About</a>
+            <a href="/how-it-works/">How it works</a>
+            <span class="active">Contact</span>
+        </div>
+    </nav>
+</header>
+<main>
+    <section class="hero">
+        <span class="tag">Contact</span>
+        <h1>{{ page_heading }}</h1>
+        <p class="summary">{{ page_summary }}</p>
+        <div class="contact-grid">
+            <div class="panel">
+                <h2>Support channels</h2>
+                <div class="info-list">
+                    <div class="info-item">
+                        <strong>Technical support</strong>
+                        <span>Need help with payments, receipts, or account access? Send a message through the form.</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Business enquiries</strong>
+                        <span>Use this page for partnership, onboarding, or service-related questions.</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Response expectation</strong>
+                        <span>We aim to respond as soon as possible during working hours.</span>
+                    </div>
+                </div>
+                <a class="back" href="/home/">Back to Home</a>
+            </div>
+            <div class="panel">
+                <h2>Send a message</h2>
+                <form id="contact-form">
+                    <div class="form-group">
+                        <label for="contact-name">Name</label>
+                        <input id="contact-name" type="text" placeholder="Your name">
+                        <div id="contact-name-error" class="field-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-email">Email</label>
+                        <input id="contact-email" type="email" placeholder="you@example.com">
+                        <div id="contact-email-error" class="field-error"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-message">Message</label>
+                        <textarea id="contact-message" placeholder="How can we help?"></textarea>
+                        <div id="contact-message-error" class="field-error"></div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-primary" type="submit" id="contactSubmitBtn">Send message</button>
+                        <button class="btn btn-secondary" type="reset">Reset</button>
+                    </div>
+                    <p id="contact-feedback" style="margin-top:12px;color:var(--muted);display:none;"></p>
+                </form>
+            </div>
+        </div>
+    </section>
+</main>
+<div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    var form = document.getElementById('contact-form');
+    var submitBtn = document.getElementById('contactSubmitBtn');
+    var toastWrap = document.getElementById('toastWrap');
+    if (!form) return;
+
+    function showToast(message, tone){
+        if (!toastWrap) return;
+        var toast = document.createElement('div');
+        toast.className = 'toast ' + (tone || 'info');
+        toast.textContent = message;
+        toastWrap.appendChild(toast);
+        window.setTimeout(function(){ toast.remove(); }, 2600);
+    }
+
+    function clearErrors() {
+        ['contact-name', 'contact-email', 'contact-message'].forEach(function(id){
+            var input = document.getElementById(id);
+            var error = document.getElementById(id + '-error');
+            if (input) input.classList.remove('is-invalid');
+            if (error) error.textContent = '';
+        });
+    }
+
+    function validateForm() {
+        clearErrors();
+        var valid = true;
+        var name = document.getElementById('contact-name').value.trim();
+        var email = document.getElementById('contact-email').value.trim();
+        var message = document.getElementById('contact-message').value.trim();
+
+        if (!name) {
+            document.getElementById('contact-name').classList.add('is-invalid');
+            document.getElementById('contact-name-error').textContent = 'Please enter your name.';
+            valid = false;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            document.getElementById('contact-email').classList.add('is-invalid');
+            document.getElementById('contact-email-error').textContent = 'Please enter a valid email address.';
+            valid = false;
+        }
+        if (!message || message.length < 10) {
+            document.getElementById('contact-message').classList.add('is-invalid');
+            document.getElementById('contact-message-error').textContent = 'Please enter at least 10 characters.';
+            valid = false;
+        }
+        if (!valid) showToast('Please correct the highlighted fields.', 'error');
+        return valid;
+    }
+
+    form.addEventListener('submit', function(e){
+        e.preventDefault();
+        if (!validateForm()) return;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Opening mail app...';
+        showToast('Opening your mail app...', 'info');
+        var name = document.getElementById('contact-name').value || 'Anonymous';
+        var email = document.getElementById('contact-email').value || '';
+        var message = document.getElementById('contact-message').value || '';
+        var subject = encodeURIComponent('Contact from FuelSync - ' + name);
+        var body = encodeURIComponent('Name: ' + name + '\nEmail: ' + email + '\n\n' + message);
+        window.location.href = 'mailto:support@fuelsync.example?subject=' + subject + '&body=' + body;
+        var feedback = document.getElementById('contact-feedback');
+        if (feedback) {
+            feedback.style.display = 'block';
+            feedback.textContent = 'Your mail app should open. If it does not, email us at support@fuelsync.example';
+        }
+        showToast('Message draft prepared successfully.', 'success');
+        window.setTimeout(function(){
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send message';
+        }, 1000);
+    });
+
+    form.addEventListener('reset', function () {
+        clearErrors();
+        showToast('Form cleared.', 'info');
+    });
+});
+</script>
+</body>
+</html>

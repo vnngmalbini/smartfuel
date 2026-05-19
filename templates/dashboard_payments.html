@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Payments - FuelSync{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2rem 0;">
+    <h1>Payments</h1>
+    <p>Pending: <strong>{{ pending_count }}</strong> | Completed: <strong>{{ completed_count }}</strong> | Failed: <strong>{{ failed_count }}</strong></p>
+
+    <div style="overflow-x: auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f9fafb;">
+                <tr>
+                    <th style="padding: 0.75rem; text-align: left;">Reference</th>
+                    <th style="padding: 0.75rem; text-align: left;">Amount</th>
+                    <th style="padding: 0.75rem; text-align: left;">Method</th>
+                    <th style="padding: 0.75rem; text-align: left;">Status</th>
+                    <th style="padding: 0.75rem; text-align: left;">Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr style="border-top: 1px solid #e5e7eb;">
+                    <td style="padding: 0.75rem;">{{ payment.reference }}</td>
+                    <td style="padding: 0.75rem;">GH₵{{ payment.amount|floatformat:2 }}</td>
+                    <td style="padding: 0.75rem;">{{ payment.payment_method }}</td>
+                    <td style="padding: 0.75rem; text-transform: capitalize;">{{ payment.status }}</td>
+                    <td style="padding: 0.75rem;">{{ payment.created_at|date:"Y-m-d H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="padding: 1rem; text-align: center; color: #6b7280;">No payments found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

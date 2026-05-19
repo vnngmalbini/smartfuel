@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Customers - FuelSync{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2rem 0;">
+    <h1>Customers</h1>
+    <p>Total customers: <strong>{{ total_customers }}</strong></p>
+
+    <div style="overflow-x: auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f9fafb;">
+                <tr>
+                    <th style="padding: 0.75rem; text-align: left;">Name</th>
+                    <th style="padding: 0.75rem; text-align: left;">Phone</th>
+                    <th style="padding: 0.75rem; text-align: left;">Email</th>
+                    <th style="padding: 0.75rem; text-align: left;">Total Purchases</th>
+                    <th style="padding: 0.75rem; text-align: left;">Loyalty Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr style="border-top: 1px solid #e5e7eb;">
+                    <td style="padding: 0.75rem;">{{ customer.first_name }} {{ customer.last_name }}</td>
+                    <td style="padding: 0.75rem;">{{ customer.phone }}</td>
+                    <td style="padding: 0.75rem;">{{ customer.email|default:'-' }}</td>
+                    <td style="padding: 0.75rem;">GH₵{{ customer.total_purchases|floatformat:2 }}</td>
+                    <td style="padding: 0.75rem;">{{ customer.loyalty_points }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="padding: 1rem; text-align: center; color: #6b7280;">No customers found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

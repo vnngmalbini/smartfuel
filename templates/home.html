@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FuelSync - Intelligent Fuel Management</title>
+    <link rel="stylesheet" href="{% static 'css/ui-base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fuelsync-core.css' %}">
+    <link rel="stylesheet" href="{% static 'css/professional-polish.css' %}">
+    <style>
+        :root {
+            --bg: #FFFFFF;
+            --gradient-primary: linear-gradient(135deg, #FFFFFF 0%, #F8FBFF 100%);
+            --gradient-brand: linear-gradient(135deg, #0D47A1 0%, #1565C0 100%);
+            --gradient-accent: linear-gradient(135deg, #FF7A00 0%, #FFB84D 100%);
+        }
+
+        /* Header / Navbar */
+        header {
+            background: var(--panel);
+            border-bottom: 1px solid var(--panel-border);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 76px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--primary);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-mark {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gradient-primary);
+            color: white;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 16px rgba(13, 71, 161, 0.25);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .menu-toggle {
+            display: none;
+            border: 1px solid var(--panel-border);
+            background: #fff;
+            color: var(--primary);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-cta {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        /* Generic button helpers */
+        .btn {
+            display: inline-block;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.15s ease;
+        }
+
+        .btn-primary {
+            background: var(--gradient-brand);
+            color: white !important;
+            box-shadow: 0 8px 20px rgba(13, 71, 161, 0.25);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 1.5px solid rgba(13,71,161,0.15);
+        }
+
+        .nav-cta a {
+            padding: 11px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        .nav-cta .login {
+            color: var(--primary);
+            border: 1.5px solid var(--primary);
+        }
+
+        .nav-cta .login:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-cta .signup {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-cta .signup:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 8px 24px rgba(13, 71, 161, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(180deg, #FFFFFF 0%, #F8FBFF 100%);
+            color: var(--text);
+            padding: 80px 32px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(13, 71, 161, 0.08) 0%, rgba(255, 122, 0, 0.04) 32%, transparent 72%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 122, 0, 0.08) 0%, rgba(13, 71, 161, 0.05) 42%, transparent 72%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(0, 1.03fr) minmax(0, 0.97fr);
+            gap: 42px;
+            align-items: stretch;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: clamp(460px, 52vw, 620px);
+            height: 100%;
+            padding: 36px 34px;
+            border-radius: 24px;
+            background: linear-gradient(165deg, #FFFFFF 0%, #F3F8FF 100%);
+            border: 1px solid rgba(13, 71, 161, 0.14);
+            box-shadow: 0 24px 42px rgba(13, 71, 161, 0.12);
+            animation: cardReveal 0.7s ease-out both;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            background: rgba(13, 71, 161, 0.08);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+            width: fit-content;
+            border: 1px solid rgba(13, 71, 161, 0.16);
+        }
+
+        .hero h1 {
+            font-size: clamp(2.4rem, 5vw, 3.8rem);
+            margin: 0 0 18px;
+            line-height: 1.15;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: #1E2638;
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            margin: 0 0 32px;
+            opacity: 1;
+            line-height: 1.7;
+            color: var(--text-muted);
+            max-width: 34ch;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        .welcome-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 0;
+        }
+
+        .welcome-item {
+            background: #FFFFFF;
+            border: 1px solid rgba(13, 71, 161, 0.14);
+            border-radius: 16px;
+            padding: 16px 18px;
+            box-shadow: 0 12px 26px rgba(13, 71, 161, 0.10);
+        }
+
+        .welcome-item strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 1rem;
+            color: #1E2638;
+        }
+
+        .welcome-item span {
+            color: var(--text-muted);
+            font-size: 0.94rem;
+        }
+
+        .hero-image-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: clamp(460px, 52vw, 620px);
+            height: 100%;
+            padding: 18px;
+            border-radius: 24px;
+            border: 1px solid rgba(13, 71, 161, 0.12);
+            background: linear-gradient(150deg, #FFFFFF 0%, #EDF4FF 100%);
+            box-shadow: 0 24px 40px rgba(13, 71, 161, 0.10);
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            border-radius: 18px;
+            background: #F8FAFD;
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.16);
+            animation: imageReveal 0.9s ease-out both;
+        }
+
+        @keyframes cardReveal {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes imageReveal {
+            from {
+                opacity: 0;
+                transform: translateY(16px) scale(0.985);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            width: 100%;
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 100px 32px;
+            background: linear-gradient(to bottom, var(--bg) 0%, #FFFFFF 50%);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-tag {
+            display: inline-block;
+            background: rgba(255, 122, 0, 0.10);
+            color: var(--accent-dark);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border: 1px solid rgba(255, 122, 0, 0.18);
+        }
+
+        .section-header h2 {
+            font-size: 2.6rem;
+            margin: 0 0 16px;
+            color: var(--text);
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        .welcome-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 24px;
+            margin-top: 28px;
+        }
+
+        .welcome-card {
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 30px 28px;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .welcome-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .welcome-card .icon {
+            font-size: 2rem;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        .welcome-card h3 {
+            margin: 0 0 10px;
+            font-size: 1.2rem;
+            color: var(--text);
+        }
+
+        .welcome-card p {
+            margin: 0 0 18px;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .welcome-card a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #fff;
+            background: var(--gradient-brand);
+            padding: 11px 16px;
+            border-radius: 12px;
+            font-weight: 800;
+            box-shadow: 0 10px 22px rgba(13, 71, 161, 0.18);
+        }
+
+        .services {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+            margin: 60px 0;
+        }
+
+        .service-card {
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 40px 32px;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-accent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(255, 122, 0, 0.30);
+        }
+
+        .service-card:hover::before {
+            opacity: 1;
+        }
+
+        .service-icon {
+            font-size: 2.8rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .service-card h3 {
+            font-size: 1.4rem;
+            margin: 0 0 12px;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .service-card p {
+            margin: 0;
+            color: var(--text-muted);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        /* Trust Section */
+        .trust-section {
+            background: linear-gradient(135deg, rgba(13, 71, 161, 0.08) 0%, rgba(255, 122, 0, 0.05) 46%, rgba(255, 244, 230, 0.92) 100%);
+            border: 1px solid rgba(255, 122, 0, 0.12);
+            border-radius: 16px;
+            padding: 60px 40px;
+            margin: 80px 0;
+            text-align: center;
+        }
+
+        .trust-section h3 {
+            font-size: 1.8rem;
+            margin: 0 0 24px;
+            color: var(--text);
+        }
+
+        .trust-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .trust-item {
+            color: var(--text-muted);
+        }
+
+        .trust-item strong {
+            display: block;
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: #FFFFFF;
+            color: var(--text);
+            border-radius: 16px;
+            padding: 80px 40px;
+            text-align: center;
+            margin: 80px 0;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--panel-border);
+            box-shadow: var(--shadow-md);
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(13, 71, 161, 0.08) 0%, rgba(255, 122, 0, 0.04) 38%, transparent 72%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .cta-section > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-section h2 {
+            font-size: 2.4rem;
+            margin: 0 0 20px;
+            line-height: 1.2;
+        }
+
+        .cta-section p {
+            font-size: 1.15rem;
+            margin: 0 0 40px;
+            opacity: 0.95;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-section .btn-primary {
+            background: var(--gradient-accent);
+            color: #FFFFFF !important;
+            border: 1px solid transparent;
+            text-decoration: none;
+            padding: 12px 24px;
+        }
+
+        .cta-section .btn-primary:hover {
+            box-shadow: 0 12px 32px rgba(255, 122, 0, 0.35);
+            transform: translateY(-3px);
+        }
+
+        .hero .btn-secondary {
+            color: var(--primary);
+            border: 1.5px solid rgba(13, 71, 161, 0.26);
+            background: #FFFFFF;
+        }
+
+        .hero .btn-secondary:hover {
+            background: var(--gradient-brand);
+            color: #FFFFFF;
+            border-color: transparent;
+        }
+
+        .info-section {
+            padding: 60px 32px;
+        }
+
+        .info-section.alt {
+            background: linear-gradient(to right, rgba(13, 71, 161, 0.03) 0%, rgba(255, 122, 0, 0.02) 100%);
+        }
+
+        .split-grid {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .split-grid p,
+        .split-grid h3 {
+            color: var(--text);
+        }
+
+        .split-grid p {
+            color: var(--text-muted);
+        }
+
+        .contact-card {
+            max-width: 820px;
+            margin: 0 auto;
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            box-shadow: var(--shadow-md);
+            padding: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            color: var(--text);
+            background: #FFFFFF;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.12);
+        }
+
+        .contact-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .contact-actions .btn-primary,
+        .contact-actions .btn-secondary {
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .contact-actions .btn-secondary {
+            border-color: rgba(13, 71, 161, 0.22);
+        }
+
+        /* Footer */
+        footer {
+            background: #FFFFFF;
+            color: var(--text-muted);
+            padding: 60px 32px 32px;
+            margin-top: 0;
+            border-top: 1px solid var(--panel-border);
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 48px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h4 {
+            color: var(--text);
+            margin: 0 0 18px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .footer-section a {
+            display: block;
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--panel-border);
+            padding-top: 32px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 0 20px;
+                height: 68px;
+            }
+
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .logo {
+                font-size: 1.1rem;
+                gap: 10px;
+            }
+
+            .logo-mark {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            .nav-links {
+                gap: 24px;
+            }
+
+            .nav-cta {
+                gap: 10px;
+            }
+
+            .nav-cta a {
+                padding: 9px 18px;
+                font-size: 0.85rem;
+            }
+
+            .hero {
+                padding: 100px 20px 80px;
+            }
+
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 16px;
+            }
+
+            .hero-text {
+                padding: 24px 20px;
+                border-radius: 18px;
+                min-height: auto;
+            }
+
+            .hero-image-container {
+                min-height: auto;
+                height: auto;
+                border-radius: 18px;
+                padding: 14px;
+            }
+
+            .hero-image {
+                height: auto;
+                aspect-ratio: 16 / 11;
+                object-fit: contain;
+            }
+
+            .welcome-strip,
+            .welcome-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 280px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            main {
+                padding: 60px 20px;
+            }
+
+            .section-header h2 {
+                font-size: 2rem;
+            }
+
+            .services {
+                gap: 24px;
+                grid-template-columns: 1fr;
+            }
+
+            .trust-section {
+                padding: 40px 24px;
+            }
+
+            .cta-section {
+                padding: 60px 24px;
+            }
+
+            .split-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .contact-card {
+                padding: 20px;
+            }
+
+            .contact-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .menu-toggle {
+                display: inline-block;
+            }
+
+            .nav-links {
+                position: absolute;
+                top: 68px;
+                left: 16px;
+                right: 16px;
+                z-index: 120;
+                background: #fff;
+                border: 1px solid var(--panel-border);
+                border-radius: 12px;
+                box-shadow: var(--shadow-md);
+                padding: 16px;
+                display: none;
+                flex-direction: column;
+                gap: 14px;
+            }
+
+            .nav-links.open {
+                display: flex;
+            }
+
+            nav {
+                gap: 12px;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .logo {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header / Navigation -->
+    <header>
+        <nav>
+            <a href="/home/" class="logo">
+                <div class="logo-mark">⛽</div>
+                FuelSync
+            </a>
+            <button
+                class="menu-toggle"
+                id="menuToggle"
+                aria-expanded="false"
+                aria-controls="mainNav"
+                aria-label="Toggle navigation menu"
+                type="button"
+            >
+                Menu
+            </button>
+            <ul class="nav-links" id="mainNav">
+                <li><a href="/how-it-works/">How it works</a></li>
+                <li><a href="/about/">About</a></li>
+                <li><a href="/contact/">Contact</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="/buy/">Buy Fuel</a></li>
+                <li><a href="/dashboard/profile/">Profile</a></li>
+                <li><a href="/dashboard/">Dashboard</a></li>
+                {% else %}
+                <li><a href="/accounts/login/">Login</a></li>
+                <li><a href="/accounts/signup/">Sign up</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <div class="hero-tag">Fuel Management Platform</div>
+                {% if user.is_authenticated %}
+                <h1>Welcome back, {{ welcome_first_name|capfirst }}.</h1>
+                <p>FuelSync provides station teams with a reliable way to manage sales, process payments, and retrieve receipts from one dashboard.</p>
+                {% else %}
+                <h1>Manage Your Fuel Station Efficiently from One Platform</h1>
+                <p>FuelSync helps fuel stations and fleet operators track sales, monitor inventory, process payments, and generate digital receipts from one centralized platform.</p>
+                {% endif %}
+                <div class="hero-actions">
+                    {% if user.is_authenticated %}
+                    <a href="/dashboard/" class="btn btn-primary">Open Dashboard</a>
+                    <a href="/buy/" class="btn btn-secondary">Start Fuel Order</a>
+                    {% else %}
+                    <a href="/accounts/signup/" class="btn btn-primary">Get Started</a>
+                    <a href="/accounts/login/" class="btn btn-secondary">Sign In</a>
+                    {% endif %}
+                </div>
+                <div class="welcome-strip">
+                    <div class="welcome-item">
+                        <strong>Initiate a sale</strong>
+                        <span>Enter the transaction amount and customer details to begin the process.</span>
+                    </div>
+                    <div class="welcome-item">
+                        <strong>Secure payment processing</strong>
+                        <span>Collect payment securely through our Paystack checkout integration.</span>
+                    </div>
+                    <div class="welcome-item">
+                        <strong>Digital receipt management</strong>
+                        <span>Receipts are stored with each customer record for efficient retrieval.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-image-container">
+                <img src="{% static 'images/gas-station.png' %}" alt="Gas Station" class="hero-image">
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <main>
+        <section id="features">
+            <div class="section-header">
+                <span class="section-tag">Quick actions</span>
+                <h2>What FuelSync does</h2>
+                <p>The platform brings together the core tasks involved in fuel station operations, from starting a sale to recording payment and storing the receipt.</p>
+            </div>
+
+            <div class="welcome-grid">
+                <div class="welcome-card">
+                    <span class="icon">🛢️</span>
+                    <h3>Initiate a sale</h3>
+                    <p>Begin a fuel transaction by entering the amount, confirming the details, and proceeding to payment.</p>
+                    <a href="/buy/">Buy Fuel</a>
+                </div>
+                <div class="welcome-card">
+                    <span class="icon">ℹ️</span>
+                    <h3>Review the workflow</h3>
+                    <p>Follow the standard process: select fuel, complete payment, and generate a digital receipt.</p>
+                    <a href="/how-it-works/">How it works</a>
+                </div>
+                <div class="welcome-card">
+                    <span class="icon">✉️</span>
+                    <h3>Support and contact</h3>
+                    <p>For questions or operational issues, contact the support team for assistance.</p>
+                    <a href="/contact/">Contact Support</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Explore More -->
+    <section class="info-section alt">
+        <div class="section-header">
+                <span class="section-tag">More information</span>
+                <h2>Learn how the platform supports daily operations</h2>
+                <p>The supporting pages explain the product in more detail, including the workflow, the purpose of each feature, and how to get help.</p>
+        </div>
+
+        <div class="services" style="max-width:1200px;margin:0 auto;grid-template-columns:repeat(3,1fr);gap:24px;">
+            <div class="service-card">
+                <span class="service-icon">ℹ️</span>
+                <h3>About</h3>
+                    <p>Understand the purpose of FuelSync and how it supports modern fuel station management.</p>
+                <a href="/about/">Read About</a>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">⚙️</span>
+                <h3>How it works</h3>
+                    <p>Review the process from selecting fuel through payment processing and receipt delivery.</p>
+                <a href="/how-it-works/">See Steps</a>
+            </div>
+            <div class="service-card">
+                <span class="service-icon">✉️</span>
+                <h3>Contact</h3>
+                    <p>Contact the FuelSync team for support, feedback, or partnership enquiries.</p>
+                <a href="/contact/">Open Contact</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Product</h4>
+                <a href="/buy/">Buy Fuel</a>
+                <a href="/receipt/">View Receipts</a>
+                <a href="/how-it-works/">How it works</a>
+            </div>
+            <div class="footer-section">
+                <h4>Account</h4>
+                <a href="/accounts/signup/">Create Account</a>
+                <a href="/accounts/login/">Sign In</a>
+                <a href="/dashboard/">Dashboard</a>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <a href="/about/">About Us</a>
+                <a href="/how-it-works/">How it works</a>
+                <a href="/contact/">Contact</a>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <a href="/about/">About</a>
+                <a href="/contact/">Support</a>
+                <a href="/accounts/login/">Account access</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 FuelSync. All rights reserved. Built for every journey.</p>
+        </div>
+    </footer>
+    <script>
+        (function () {
+            const toggle = document.getElementById("menuToggle");
+            const nav = document.getElementById("mainNav");
+            if (!toggle || !nav) return;
+
+            toggle.addEventListener("click", function () {
+                const expanded = toggle.getAttribute("aria-expanded") === "true";
+                toggle.setAttribute("aria-expanded", String(!expanded));
+                nav.classList.toggle("open");
+            });
+        })();
+    </script>
+</body>
+</html>

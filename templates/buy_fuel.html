@@ -1,0 +1,509 @@
+{% extends 'base.html' %}
+
+{% block title %}Buy Fuel | FuelSync{% endblock %}
+
+{% block body_class %}shell{% endblock %}
+
+{% block extra_css %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/ui-base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fuelsync-pages.css' %}">
+    <link rel="stylesheet" href="{% static 'css/professional-polish.css' %}">
+    <style>
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding-right: 48px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%230F1724' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 14px 14px;
+        }
+
+        .result {
+            margin: 24px 0;
+            padding: 22px;
+            background: linear-gradient(135deg, rgba(13,71,161,0.12) 0%, rgba(13,71,161,0.06) 100%);
+            border: 2px solid rgba(13,71,161,0.2);
+            border-radius: 12px;
+            font-weight: 700;
+            color: #0D47A1;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        .btn-pay svg { width: 20px; height: 20px; flex: none; }
+        .btn-pay { 
+            width: 100%;
+            margin-top: 24px;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0D47A1 0%, #1565C0 100%);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(13,71,161,0.3);
+        }
+        .btn-pay:hover:not(:disabled) { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(13,71,161,0.4);
+        }
+        .btn-pay:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .btn-pay:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .help { 
+            text-align: center;
+            margin-top: 16px;
+            color: #6B7280;
+            font-size: 0.9rem;
+        }
+
+        .buy-workspace {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.95fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .buy-form,
+        .summary-panel {
+            min-width: 0;
+        }
+
+        .summary-panel {
+            position: sticky;
+            top: 18px;
+            display: grid;
+            gap: 14px;
+            padding: 18px;
+            border-radius: 16px;
+            background: linear-gradient(180deg, rgba(13,71,161,0.04) 0%, rgba(13,71,161,0.02) 100%);
+            border: 1px solid rgba(13,71,161,0.10);
+        }
+
+        .summary-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            width: fit-content;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(13,71,161,0.08);
+            color: #0D47A1;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .summary-title {
+            margin: 0;
+            color: #0F1724;
+            font-size: 1.15rem;
+            line-height: 1.2;
+        }
+
+        .summary-copy {
+            margin: 0;
+            color: #516072;
+            font-size: 0.92rem;
+            line-height: 1.55;
+        }
+
+        .summary-panel .price-display {
+            margin: 0;
+        }
+
+        .summary-panel .result {
+            margin: 0;
+        }
+
+        .summary-note {
+            margin: 0;
+            color: #516072;
+            font-size: 0.9rem;
+            line-height: 1.55;
+        }
+
+        .price-display { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 12px; 
+            margin-top: 16px; 
+            margin-bottom: 28px; 
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 100%;
+        }
+        .price-item { 
+            padding: 16px; 
+            background: linear-gradient(135deg, rgba(13,71,161,0.08) 0%, rgba(13,71,161,0.04) 100%); 
+            border: 1px solid rgba(13,71,161,0.12);
+            border-radius: 10px; 
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .price-item:hover {
+            border-color: rgba(13,71,161,0.24);
+            background: linear-gradient(135deg, rgba(13,71,161,0.12) 0%, rgba(13,71,161,0.08) 100%);
+        }
+        .price-item-label { 
+            color: #6B7280; 
+            font-size: 0.8rem; 
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .price-item-value { 
+            font-weight: 800; 
+            color: #0D47A1; 
+            margin-top: 6px;
+            font-size: 1.3rem;
+        }
+
+        .mode-toggle {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-toggle input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .mode-option {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 52px;
+            border: 1.5px solid #D8E2EE;
+            border-radius: 10px;
+            background: #F8FBFF;
+            color: #0F1724;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .mode-toggle input:checked + .mode-option {
+            border-color: #0D47A1;
+            background: linear-gradient(135deg, rgba(13,71,161,0.12) 0%, rgba(13,71,161,0.06) 100%);
+            color: #0D47A1;
+            box-shadow: 0 0 0 3px rgba(13,71,161,0.08);
+        }
+
+        .mode-option:hover {
+            background: #F0F5FF;
+            border-color: rgba(13,71,161,0.3);
+        }
+
+        .inline-status {
+            margin-top: 12px;
+            padding: 12px 14px;
+            background: rgba(13,71,161,0.06);
+            border-left: 3px solid #0D47A1;
+            border-radius: 6px;
+            color: #0F1724;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 900px) {
+            .hero { padding: 16px; }
+            h1 { font-size: 1.35rem; }
+            .price-display { grid-template-columns: 1fr; }
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            color: #0F1724;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            align-content: center;
+            padding-left: 10px;
+        }
+
+        input[type="number"],
+        input[type="tel"],
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1.5px solid #D8E2EE;
+            border-radius: 10px;
+            background: #FBFDFF;
+            color: #0F1724;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        input[type="number"]:focus,
+        input[type="tel"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #0D47A1;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(13,71,161,0.08);
+        }
+
+        input[type="number"]::placeholder,
+        input[type="tel"]::placeholder {
+            color: #A0AEC0;
+        }
+
+        input[type="number"].is-invalid,
+        input[type="tel"].is-invalid {
+            border-color: #DC2626;
+            background: rgba(220,38,38,0.05);
+        }
+
+        .field-error {
+            color: #DC2626;
+            font-size: 0.85rem;
+            margin-top: 4px;
+            display: block;
+        }
+
+        @media (max-width: 1024px) {
+            .buy-workspace {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-panel {
+                position: static;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .buy-form,
+            .summary-panel {
+                padding: 0;
+                border: 0;
+                background: transparent;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+
+    <section class="hero">
+        <div class="eyebrow">Quick Fuel Purchase</div>
+        <h1>Buy Fuel</h1>
+        <p>Select your fuel type, enter amount, and generate a secure payment QR code instantly.</p>
+    </section>
+
+    <section class="card">
+        <div class="buy-workspace">
+            <div class="buy-form">
+                <div class="form-group">
+                    <label>Calculate by</label>
+                    <div class="mode-toggle" role="radiogroup" aria-label="Purchase calculation mode">
+                        <input type="radio" name="pricingMode" id="modeAmount" value="amount" checked>
+                        <label class="mode-option" for="modeAmount">Amount</label>
+
+                        <input type="radio" name="pricingMode" id="modeLitres" value="litres">
+                        <label class="mode-option" for="modeLitres">Litres</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="fuelType">Fuel Type</label>
+                    <select id="fuelType" aria-label="Fuel type">
+                        <option value="13.25" data-fuel-type="petrol">Petrol - GHS 13.25/L</option>
+                        <option value="15.55" data-fuel-type="diesel">Diesel - GHS 15.55/L</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount" id="valueLabel">Amount (GHS)</label>
+                    <input type="number" id="amount" placeholder="Enter amount in GHS" min="0" inputmode="decimal" step="0.01" />
+                    <div class="field-error" id="amountError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" placeholder="Enter phone number" />
+                    <div class="field-error" id="phoneError"></div>
+                </div>
+
+                <button class="btn-pay btn-primary-action" id="payBtn" type="button">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span id="payBtnText">Generate secure QR payment</span>
+                </button>
+            </div>
+
+            <aside class="summary-panel" aria-label="Purchase summary">
+                <div>
+                    <div class="summary-kicker">Live estimate</div>
+                    <h2 class="summary-title">Review the cost before checkout</h2>
+                    <p class="summary-copy">The summary updates as you switch between amount and litres, so you can confirm the final order instantly.</p>
+                </div>
+
+                <div class="price-display" id="priceDisplay">
+                    <div class="price-item">
+                        <div class="price-item-label">Price per Liter</div>
+                        <div class="price-item-value" id="pricePerLiter">GHS 13.25</div>
+                    </div>
+                    <div class="price-item">
+                        <div class="price-item-label">Total Liters</div>
+                        <div class="price-item-value" id="totalLiters">0 L</div>
+                    </div>
+                </div>
+
+                <div id="result" class="result">You get: 0.00 Litres</div>
+                <div id="inlineStatus" class="inline-status"></div>
+
+                <p class="summary-note">Payments are processed securely. You will be redirected to complete payment after QR generation.</p>
+            </aside>
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        const modeAmount = document.getElementById("modeAmount");
+        const modeLitres = document.getElementById("modeLitres");
+        const valueLabel = document.getElementById("valueLabel");
+        const amountInput = document.getElementById("amount");
+        const fuelType = document.getElementById("fuelType");
+        const result = document.getElementById("result");
+        const inlineStatus = document.getElementById("inlineStatus");
+        const pricePerLiterEl = document.getElementById("pricePerLiter");
+        const totalLitersEl = document.getElementById("totalLiters");
+        const payBtn = document.getElementById("payBtn");
+        const phoneInput = document.getElementById("phone");
+        const amountError = document.getElementById("amountError");
+        const phoneError = document.getElementById("phoneError");
+        const payBtnText = document.getElementById("payBtnText");
+        const toastWrap = document.getElementById("toastWrap");
+
+        function showToast(message, tone) {
+            const toast = document.createElement("div");
+            toast.className = `toast ${tone || "info"}`;
+            toast.textContent = message;
+            toastWrap.appendChild(toast);
+            window.setTimeout(() => toast.remove(), 2600);
+        }
+
+        function getPricingMode() {
+            return modeLitres.checked ? "litres" : "amount";
+        }
+
+        function getCalculatedValues() {
+            const price = parseFloat(fuelType.value) || 1;
+            const enteredValue = parseFloat(amountInput.value) || 0;
+            const mode = getPricingMode();
+            const amount = mode === "litres" ? enteredValue * price : enteredValue;
+            const litres = mode === "litres" ? enteredValue : enteredValue / price;
+            const selectedOption = fuelType.options[fuelType.selectedIndex];
+            const selectedFuelType = (selectedOption && selectedOption.dataset)
+                ? String(selectedOption.dataset.fuelType || "").trim()
+                : "";
+
+            return { price, enteredValue, amount, litres, mode, selectedFuelType };
+        }
+
+        function updatePricingDisplay() {
+            const { price, amount, litres, mode } = getCalculatedValues();
+
+            pricePerLiterEl.innerText = `GHS ${price.toFixed(2)}`;
+            totalLitersEl.innerText = `${litres.toFixed(2)} L`;
+
+            if (mode === "litres") {
+                valueLabel.innerText = "Litres";
+                amountInput.placeholder = "Enter litres to pump";
+                amountInput.inputMode = "decimal";
+                result.innerText = `You pay: GHS ${amount.toFixed(2)}`;
+                inlineStatus.innerText = `The system will calculate GHS ${amount.toFixed(2)} to pay.`;
+            } else {
+                valueLabel.innerText = "Amount (GHS)";
+                amountInput.placeholder = "Enter amount in GHS";
+                amountInput.inputMode = "decimal";
+                result.innerText = `You get: ${litres.toFixed(2)} Litres`;
+                inlineStatus.innerText = `The system will calculate ${litres.toFixed(2)} litres to be pumped.`;
+            }
+        }
+
+        amountInput.addEventListener('input', updatePricingDisplay);
+        fuelType.addEventListener('change', updatePricingDisplay);
+        modeAmount.addEventListener('change', updatePricingDisplay);
+        modeLitres.addEventListener('change', updatePricingDisplay);
+        amountInput.addEventListener('input', clearErrors);
+        phoneInput.addEventListener('input', clearErrors);
+
+        // Keep displayed price in sync with selected fuel from first render.
+        updatePricingDisplay();
+
+        function clearErrors() {
+            amountError.textContent = "";
+            phoneError.textContent = "";
+            amountInput.classList.remove("is-invalid");
+            phoneInput.classList.remove("is-invalid");
+        }
+
+        function validateForm() {
+            clearErrors();
+            let valid = true;
+            const { amount, litres, mode } = getCalculatedValues();
+            const phone = phoneInput.value.trim();
+
+            if (!amountInput.value || amount <= 0 || litres <= 0) {
+                amountError.textContent = mode === "litres"
+                    ? "Enter a valid litres value greater than 0."
+                    : "Enter a valid amount greater than 0.";
+                amountInput.classList.add("is-invalid");
+                showToast(mode === "litres" ? "Enter valid litres to continue." : "Enter a valid amount to continue.", "error");
+                valid = false;
+            }
+
+            if (!/^[0-9+\\-\\s]{8,15}$/.test(phone)) {
+                phoneError.textContent = "Enter a valid phone number (8-15 digits).";
+                phoneInput.classList.add("is-invalid");
+                showToast("Check the phone number and try again.", "error");
+                valid = false;
+            }
+
+            return valid;
+        }
+
+        payBtn.addEventListener('click', function() {
+            if (!validateForm()) {
+                return;
+            }
+            const { amount, litres, selectedFuelType } = getCalculatedValues();
+            const phone = phoneInput.value.trim();
+            payBtn.disabled = true;
+            payBtnText.textContent = "Preparing checkout...";
+            showToast("Checkout is being prepared...", "info");
+            window.location.href = `/payment/pay/?amount=${encodeURIComponent(amount.toFixed(2))}&phone=${encodeURIComponent(phone)}&liters=${encodeURIComponent(litres.toFixed(2))}&fuel_type=${encodeURIComponent(selectedFuelType || '')}`;
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Reports - FuelSync{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2rem 0;">
+    <h1>Reports</h1>
+    <p>
+        Today's revenue: <strong>GH₵{{ today_revenue|floatformat:2 }}</strong>
+        | Today's liters sold: <strong>{{ today_liters|floatformat:2 }} L</strong>
+        | Today's transactions: <strong>{{ today_transactions }}</strong>
+    </p>
+
+    <div style="overflow-x: auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f9fafb;">
+                <tr>
+                    <th style="padding: 0.75rem; text-align: left;">Date</th>
+                    <th style="padding: 0.75rem; text-align: left;">Transactions</th>
+                    <th style="padding: 0.75rem; text-align: left;">Liters Sold</th>
+                    <th style="padding: 0.75rem; text-align: left;">Revenue</th>
+                    <th style="padding: 0.75rem; text-align: left;">Profit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr style="border-top: 1px solid #e5e7eb;">
+                    <td style="padding: 0.75rem;">{{ report.date|date:"Y-m-d" }}</td>
+                    <td style="padding: 0.75rem;">{{ report.total_transactions }}</td>
+                    <td style="padding: 0.75rem;">{{ report.total_liters_sold|floatformat:2 }}</td>
+                    <td style="padding: 0.75rem;">GH₵{{ report.total_revenue|floatformat:2 }}</td>
+                    <td style="padding: 0.75rem;">GH₵{{ report.profit|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="padding: 1rem; text-align: center; color: #6b7280;">No daily reports found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

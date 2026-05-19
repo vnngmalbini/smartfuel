@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Out | FuelSync</title>
+    <style>
+        :root {
+            --primary: #0D47A1;
+            --primary-light: #1565C0;
+            --primary-dark: #0A3A7D;
+            --accent: #1565C0;
+            --accent-light: #64B5F6;
+            --accent-dark: #0D47A1;
+            --success: #4CAF50;
+            --alert: #EF4444;
+            --bg: #F8F9FB;
+            --text: #1A202C;
+            --text-muted: #718096;
+            --panel: #FFFFFF;
+            --panel-border: #E2E8F0;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.15);
+            --shadow: var(--shadow-md);
+            --light-accent: #EAF3FF;
+            --gradient-primary: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+            --gradient-accent: linear-gradient(135deg, #0D47A1 0%, #1565C0 100%);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 24px;
+        }
+
+        .container {
+            width: min(420px, 100%);
+            border: 1px solid var(--panel-border);
+            background: var(--panel);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            padding: 42px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: 1.8rem;
+            color: var(--text);
+        }
+
+        p {
+            margin: 0 0 28px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        form {
+            display: grid;
+            gap: 12px;
+        }
+
+        button, a {
+            width: 100%;
+            padding: 12px 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.18s ease;
+        }
+
+        button[type="submit"] {
+            background: linear-gradient(135deg, var(--alert), #DC2626);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        button[type="submit"]:hover {
+            background: linear-gradient(135deg, #DC2626, #B91C1C);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.25);
+        }
+
+        a {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--panel-border);
+            display: block;
+        }
+
+        a:hover {
+            background: #F9FAFB;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Log Out?</h1>
+        <p>Are you sure you want to log out? You will need to sign in again to access your dashboard.</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit">Yes, Log Out</button>
+            <a href="/dashboard/">Cancel</a>
+        </form>
+    </div>
+</body>
+    <style>
+        :root {
+            --primary: #0D47A1;
+            --primary-light: #1565C0;
+            --primary-dark: #0A3A7D;
+            --accent: #1565C0;
+            --accent-light: #64B5F6;
+            --accent-dark: #0D47A1;
+            --success: #4CAF50;
+            --alert: #EF4444;
+            --bg: #F8F9FB;
+            --text: #1A202C;
+            --text-muted: #718096;
+            --panel: #FFFFFF;
+            --panel-border: #E2E8F0;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.15);
+            --shadow: var(--shadow-md);
+            --light-accent: #EAF3FF;
+            --gradient-primary: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+            --gradient-accent: linear-gradient(135deg, #0D47A1 0%, #1565C0 100%);
+        }
