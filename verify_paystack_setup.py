@@ -95,6 +95,20 @@ def check_environment():
         site_url and len(site_url) > 0,
         "Set SITE_BASE_URL in settings.py (e.g., https://yoursite.com or http://127.0.0.1:8000)"
     )
+
+    webhook_url = getattr(settings, 'PAYSTACK_WEBHOOK_URL', None)
+    checker.check(
+        "PAYSTACK_WEBHOOK_URL configured",
+        webhook_url and len(webhook_url) > 0,
+        "Set PAYSTACK_WEBHOOK_URL or let it derive from SITE_BASE_URL"
+    )
+    if webhook_url:
+        print(f"Webhook URL to register in Paystack: {webhook_url}")
+        if '127.0.0.1' in webhook_url or 'localhost' in webhook_url:
+            checker.warning(
+                "Webhook URL is local-only",
+                "Paystack cannot notify localhost. Set SITE_BASE_URL or PAYSTACK_WEBHOOK_URL to a public HTTPS URL."
+            )
     
     # Check logs directory
     logs_dir = Path('logs')
@@ -179,7 +193,7 @@ def check_code():
     
     # Check payment/views.py imports
     try:
-        with open('payment/views.py', 'r') as f:
+        with open('payment/views.py', 'r', encoding='utf-8') as f:
             content = f.read()
             checker.check(
                 "payment/views.py uses station.models.Transaction",
@@ -196,7 +210,7 @@ def check_code():
     
     # Check dashboard/views.py has live stats API
     try:
-        with open('dashboard/views.py', 'r') as f:
+        with open('dashboard/views.py', 'r', encoding='utf-8') as f:
             content = f.read()
             checker.check(
                 "dashboard_live_stats_api endpoint created",
@@ -216,7 +230,7 @@ def check_code():
     
     # Check dashboard URLs have new endpoint
     try:
-        with open('dashboard/urls.py', 'r') as f:
+        with open('dashboard/urls.py', 'r', encoding='utf-8') as f:
             content = f.read()
             checker.check(
                 "Dashboard API endpoint routed",

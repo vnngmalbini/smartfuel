@@ -162,7 +162,7 @@ def build_receipt_pdf(transaction) -> bytes:
 
 
 def send_sms_message(phone: str, message: str) -> tuple[bool, str]:
-    """Send SMS using Twilio-compatible REST API.
+    """Send SMS using the configured provider.
 
     Returns (success, provider_message).
     """
@@ -170,37 +170,113 @@ def send_sms_message(phone: str, message: str) -> tuple[bool, str]:
     if not sms_enabled:
         return False, 'SMS is disabled in settings.'
 
+    provider = (getattr(settings, 'SMS_PROVIDER', 'twilio') or 'twilio').strip().lower()
     account_sid = (getattr(settings, 'TWILIO_ACCOUNT_SID', '') or '').strip()
     auth_token = (getattr(settings, 'TWILIO_AUTH_TOKEN', '') or '').strip()
     from_number = (getattr(settings, 'TWILIO_FROM_NUMBER', '') or '').strip()
-
-    if not account_sid or not auth_token or not from_number:
-        return False, 'Twilio credentials are not configured.'
+    sender_id = (getattr(settings, 'SMS_SENDER_ID', '') or '').strip()
 
     normalized_phone = normalize_phone_number(phone)
     if not normalized_phone:
         return False, 'Recipient phone number is missing.'
 
     to_number = f'+{normalized_phone}'
-    endpoint = f'https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json'
 
-    try:
-        response = requests.post(
-            endpoint,
-            data={
-                'To': to_number,
-                'From': from_number,
-                'Body': message,
-            },
-            auth=(account_sid, auth_token),
-            timeout=15,
-        )
-    except requests.RequestException as error:
-        logger.warning('SMS send request failed: %s', error)
-        return False, str(error)
+    if provider == 'twilio':
+        if not account_sid or not auth_token or not from_number:
+            return False, 'Twilio credentials are not configured.'
 
-    if response.status_code >= 400:
-        logger.warning('SMS provider rejected message: %s %s', response.status_code, response.text)
-        return False, f'HTTP {response.status_code}'
+        endpoint = f'https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json'
 
-    return True, 'sent'
+        try:
+            response = requests.post(
+                endpoint,
+                data={
+                    'To': to_number,
+                    'From': from_number,
+                    'Body': message,
+                },
+                auth=(account_sid, auth_token),
+                timeout=15,
+            )
+        except requests.RequestException as error:
+            logger.warning('SMS send request failed: %s', error)
+            return False, str(error)
+
+        if response.status_code >= 400:
+            logger.warning('SMS provider rejected message: %s %s', response.status_code, response.text)
+            return False, f'HTTP {response.status_code}'
+
+        return True, 'sent'
+
+    if provider == 'hubtel':
+        client_id = (getattr(settings, 'HUBTEL_CLIENT_ID', '') or '').strip()
+        client_secret = (getattr(settings, 'HUBTEL_CLIENT_SECRET', '') or '').strip()
+        hubtel_url = (getattr(settings, 'HUBTEL_SMS_URL', '') or '').strip() or 'https://sms.hubtel.com/v1/messages/send'
+
+        if not client_id or not client_secret:
+            return False, 'Hubtel credentials are not configured.'
+        if not sender_id:
+            return False, 'SMS_SENDER_ID is required for Hubtel.'
+
+        payload = {
+            'From': sender_id,
+            'To': to_number,
+            'Content': message,
+            'RegisteredDelivery': True,
+        }
+
+        try:
+            response = requests.post(
+                hubtel_url,
+                json=payload,
+                auth=(client_id, client_secret),
+                headers={'Content-Type': 'application/json'},
+                timeout=15,
+            )
+        except requests.RequestException as error:
+            logger.warning('Hubtel SMS send request failed: %s', error)
+            return False, str(error)
+
+        if response.status_code >= 400:
+            logger.warning('Hubtel rejected message: %s %s', response.status_code, response.text)
+            return False, f'HTTP {response.status_code}'
+
+        return True, 'sent'
+
+    if provider == 'arkesel':
+        api_key = (getattr(settings, 'ARKESEL_API_KEY', '') or '').strip()
+        arkesel_url = (getattr(settings, 'ARKESEL_SMS_URL', '') or '').strip() or 'https://sms.arkesel.com/api/v2/sms/send'
+
+        if not api_key:
+            return False, 'Arkesel API key is not configured.'
+        if not sender_id:
+            return False, 'SMS_SENDER_ID is required for Arkesel.'
+
+        payload = {
+            'sender': sender_id,
+            'message': message,
+            'recipients': [to_number],
+        }
+
+        try:
+            response = requests.post(
+                arkesel_url,
+                json=payload,
+                headers={
+                    'Content-Type': 'application/json',
+                    'api-key': api_key,
+                },
+                timeout=15,
+            )
+        except requests.RequestException as error:
+            logger.warning('Arkesel SMS send request failed: %s', error)
+            return False, str(error)
+
+        if response.status_code >= 400:
+            logger.warning('Arkesel rejected message: %s %s', response.status_code, response.text)
+            return False, f'HTTP {response.status_code}'
+
+        return True, 'sent'
+
+    return False, f'Unsupported SMS provider: {provider}'

@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from collections import defaultdict
 import logging
 
@@ -21,6 +21,7 @@ from .forms import (
     PhoneSignupForm,
     ProfilePreferencesForm,
     ProfilePictureForm,
+    SMSTestForm,
     UserProfileForm,
 )
 from .permissions import get_user_role, role_required
@@ -30,6 +31,9 @@ from station.models import (
     FuelInventory, Notification, Pump, Transaction, 
     FuelType, Staff, Receipt, Customer, DailySalesReport, Payment, FuelPriceHistory
 )
+from payment.models import SMSDeliveryLog, PaymentAuditLog
+from payment.notifications import build_test_sms_message, get_sms_provider_status, queue_sms_delivery, record_payment_audit
+from payment.services import normalize_phone_number
 
 
 def _build_dashboard_live_signature():
@@ -56,7 +60,104 @@ def _build_dashboard_live_signature():
     latest_txn_id = latest_txn['transaction_id'] if latest_txn else ''
     latest_ts = latest_txn['created_at'].isoformat() if latest_txn and latest_txn['created_at'] else ''
 
-    return f"{transaction_count}|{float(today_revenue):.2f}|{pending_payments}|{low_stock_count}|{latest_txn_id}|{latest_ts}"
+    todays_payments = Payment.objects.filter(
+        transaction__created_at__date=today,
+        status='completed',
+    )
+    latest_payment = todays_payments.order_by('-updated_at').values('reference', 'updated_at').first()
+    latest_payment_reference = latest_payment['reference'] if latest_payment else ''
+    latest_payment_ts = latest_payment['updated_at'].isoformat() if latest_payment and latest_payment['updated_at'] else ''
+
+    payment_count = todays_payments.count()
+
+    return f"{transaction_count}|{payment_count}|{float(today_revenue):.2f}|{pending_payments}|{low_stock_count}|{latest_txn_id}|{latest_ts}|{latest_payment_reference}|{latest_payment_ts}"
+
+
+def _month_start(value):
+    return value.replace(day=1)
+
+
+def _next_month_start(value):
+    year = value.year + (1 if value.month == 12 else 0)
+    month = 1 if value.month == 12 else value.month + 1
+    return value.replace(year=year, month=month, day=1)
+
+
+def _build_revenue_series(transactions, start_date, end_date, bucket="day"):
+    """Build serializable revenue series for a time window."""
+    timeline = []
+    if bucket == "month":
+        current = _month_start(start_date)
+        while current <= end_date:
+            timeline.append(current)
+            current = _next_month_start(current)
+    else:
+        current = start_date
+        while current <= end_date:
+            timeline.append(current)
+            current += timedelta(days=1)
+
+    buckets = {
+        value: {"revenue": 0.0, "transactions": 0, "liters": 0.0}
+        for value in timeline
+    }
+
+    for txn in transactions:
+        if not txn.created_at:
+            continue
+
+        created_date = txn.created_at.date()
+        if bucket == "month":
+            created_key = _month_start(created_date)
+        else:
+            created_key = created_date
+
+        if created_key not in buckets:
+            continue
+
+        entry = buckets[created_key]
+        entry["revenue"] += float(txn.total_amount or 0)
+        entry["transactions"] += 1
+        entry["liters"] += float(txn.liters_dispensed or 0)
+
+    labels = []
+    revenue_values = []
+    transaction_values = []
+    liters_values = []
+    for value in timeline:
+        entry = buckets[value]
+        labels.append(value.strftime("%b") if bucket == "month" else value.strftime("%d %b"))
+        revenue_values.append(entry["revenue"])
+        transaction_values.append(entry["transactions"])
+        liters_values.append(entry["liters"])
+
+    return {
+        "labels": labels,
+        "revenue_values": revenue_values,
+        "transaction_values": transaction_values,
+        "liters_values": liters_values,
+        "total_revenue": sum(revenue_values),
+        "transaction_count": sum(transaction_values),
+        "average_revenue": (sum(revenue_values) / len(revenue_values)) if revenue_values else 0,
+    }
+
+
+def _build_period_summary(label, transactions, start_date, end_date, bucket="day"):
+    series = _build_revenue_series(transactions, start_date, end_date, bucket=bucket)
+    return {
+        "label": label,
+        "start_date": start_date.isoformat(),
+        "end_date": end_date.isoformat(),
+        "revenue": float(series["total_revenue"]),
+        "transactions": int(series["transaction_count"]),
+        "average_daily_revenue": float(series["average_revenue"]),
+        "chart": {
+            "labels": series["labels"],
+            "revenue": series["revenue_values"],
+            "transactions": series["transaction_values"],
+            "liters": series["liters_values"],
+        },
+    }
 
 
 class PhoneLoginView(LoginView):
@@ -73,6 +174,8 @@ class PhoneLoginView(LoginView):
 @role_required('admin', 'manager', 'attendant')
 def dashboard_home(request):
     today = timezone.localdate()
+    user_role = get_user_role(request.user) or 'attendant'
+    can_view_revenue_analytics = user_role in {'admin', 'manager'} or request.user.is_superuser
 
     period_transactions = Transaction.objects.filter(
         created_at__date=today,
@@ -124,13 +227,18 @@ def dashboard_home(request):
             'time': txn.created_at.strftime('%I:%M %p') if txn.created_at else 'N/A',
         })
 
-    recent_payments = Payment.objects.select_related('transaction', 'transaction__customer').order_by('-created_at')[:5]
+    # Show recent payments that belong to transactions in the same date window (today)
+    recent_payments = Payment.objects.select_related('transaction', 'transaction__customer').filter(
+        transaction__created_at__date=today,
+        transaction__status='completed',
+    ).order_by('-created_at')[:5]
     payment_data = []
     for payment in recent_payments:
         transaction = payment.transaction
+        customer_name = payment.customer_name or (transaction.customer.first_name + ' ' + transaction.customer.last_name if transaction.customer else 'N/A')
         payment_data.append({
             'reference': payment.reference,
-            'customer_name': transaction.customer.first_name + ' ' + transaction.customer.last_name if transaction.customer else 'N/A',
+            'customer_name': customer_name,
             'amount': payment.amount,
             'status': payment.status.capitalize(),
             'method': payment.payment_method.replace('_', ' ').title(),
@@ -204,37 +312,100 @@ def dashboard_home(request):
     active_pump_rate = (active_pumps / total_pumps * 100) if total_pumps else 0
     pending_payment_rate = (pending_payments / (transaction_count + pending_payments) * 100) if (transaction_count + pending_payments) else 0
 
-    monthly_revenue = []
-    current_year = today.year
-    current_month = today.month
-    for index in range(5, -1, -1):
-        month_number = current_month - index
-        year = current_year
-        while month_number <= 0:
-            month_number += 12
-            year -= 1
-        while month_number > 12:
-            month_number -= 12
-            year += 1
+    analytics_periods = {}
+    analytics_cards = []
+    revenue_chart_periods = {
+        'today': {
+            'label': 'Today',
+            'description': 'Hourly revenue from 06:00 to 22:00',
+        },
+        '7d': {
+            'label': '7 Days',
+            'description': 'Daily revenue for the last 7 days',
+        },
+        '30d': {
+            'label': '30 Days',
+            'description': 'Daily revenue for the last 30 days',
+        },
+        '90d': {
+            'label': '90 Days',
+            'description': 'Daily revenue for the last 90 days',
+        },
+        'year': {
+            'label': 'Current Year',
+            'description': 'Monthly revenue for the current year',
+        },
+    }
 
-        month_start = timezone.make_aware(timezone.datetime(year, month_number, 1))
-        if month_number == 12:
-            next_month = timezone.make_aware(timezone.datetime(year + 1, 1, 1))
-        else:
-            next_month = timezone.make_aware(timezone.datetime(year, month_number + 1, 1))
+    if can_view_revenue_analytics:
+        current_year_start = today.replace(month=1, day=1)
+        revenue_windows = {
+            '7d': (today - timedelta(days=6), today, 'day'),
+            '30d': (today - timedelta(days=29), today, 'day'),
+            '90d': (today - timedelta(days=89), today, 'day'),
+            'year': (current_year_start, today, 'month'),
+        }
 
-        month_total = Transaction.objects.filter(
-            created_at__gte=month_start,
-            created_at__lt=next_month,
-            status='completed',
-        ).exclude(
-            fuel_type__name__iexact='lpg'
-        ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+        for key, (start_date, end_date, bucket) in revenue_windows.items():
+            window_transactions = Transaction.objects.filter(
+                created_at__date__gte=start_date,
+                created_at__date__lte=end_date,
+                status='completed',
+            ).filter(_exclude_lpg_filter()).order_by('created_at')
 
-        monthly_revenue.append({
-            'label': timezone.datetime(year, month_number, 1).strftime('%b'),
-            'value': float(month_total),
-        })
+            analytics_periods[key] = _build_period_summary(
+                revenue_chart_periods[key]['label'],
+                window_transactions,
+                start_date,
+                end_date,
+                bucket=bucket,
+            )
+
+        analytics_cards = [
+            {
+                'key': '7d',
+                'label': 'Past 7 Days',
+                'value': f'GH₵{analytics_periods["7d"]["revenue"]:.0f}',
+                'subtitle': f'{analytics_periods["7d"]["transactions"]} transactions',
+                'tone': 'blue',
+            },
+            {
+                'key': '30d',
+                'label': 'Past 30 Days',
+                'value': f'GH₵{analytics_periods["30d"]["revenue"]:.0f}',
+                'subtitle': f'{analytics_periods["30d"]["transactions"]} transactions',
+                'tone': 'green',
+            },
+            {
+                'key': '90d',
+                'label': 'Past 90 Days',
+                'value': f'GH₵{analytics_periods["90d"]["revenue"]:.0f}',
+                'subtitle': f'{analytics_periods["90d"]["transactions"]} transactions',
+                'tone': 'orange',
+            },
+            {
+                'key': 'year',
+                'label': 'Current Year',
+                'value': f'GH₵{analytics_periods["year"]["revenue"]:.0f}',
+                'subtitle': f'{analytics_periods["year"]["transactions"]} transactions',
+                'tone': 'navy',
+            },
+        ]
+
+    today_chart = {
+        'labels': revenue_trend_labels,
+        'revenue': revenue_trend_values,
+        'transactions': transaction_trend_values,
+        'liters': fuel_dispensed_trend_values,
+    }
+
+    revenue_chart_data = {
+        'today': today_chart,
+    }
+    revenue_chart_data.update({key: value['chart'] for key, value in analytics_periods.items()})
+
+    if not can_view_revenue_analytics:
+        revenue_chart_periods = {'today': revenue_chart_periods['today']}
 
     peak_hours = []
     for hour in range(6, 22, 2):
@@ -329,21 +500,12 @@ def dashboard_home(request):
 
     recent_alerts = notification_data[:3]
     
-    has_dashboard_data = any([
-        transaction_count,
-        total_fuel_dispensed,
-        low_stock_count,
-        pending_payments,
-        active_pumps,
-        total_fuel_types,
-        total_pumps,
-        bool(fuel_details),
-        bool(transactions_data),
-        bool(notification_data),
-        bool(peak_hours and any(item['value'] for item in peak_hours)),
-    ])
+    has_dashboard_data = True
     
     context = {
+        'user_role': user_role,
+        'user_role_label': user_role.title(),
+        'can_view_revenue_analytics': can_view_revenue_analytics,
         'today_revenue': today_revenue,
         'transaction_count': transaction_count,
         'total_fuel_dispensed': total_fuel_dispensed,
@@ -365,6 +527,9 @@ def dashboard_home(request):
         'sparkline_map': sparkline_map,
         'pump_status_summary': dict(pump_status_summary),
         'has_dashboard_data': has_dashboard_data,
+        'revenue_chart_periods': revenue_chart_periods,
+        'revenue_chart_data': revenue_chart_data,
+        'analytics_cards': analytics_cards,
         'revenue_trend_labels': revenue_trend_labels,
         'revenue_trend_values': revenue_trend_values,
         'transaction_trend_values': transaction_trend_values,
@@ -373,7 +538,6 @@ def dashboard_home(request):
         'fuel_type_values': list(fuel_type_totals.values()),
         'weekly_labels': weekly_labels,
         'weekly_totals': weekly_totals,
-        'monthly_revenue': monthly_revenue,
         'peak_hours': peak_hours,
         'live_signature': _build_dashboard_live_signature(),
     }
@@ -443,6 +607,8 @@ def user_profile(request):
 def settings_view(request):
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     display_name = (request.user.get_full_name() or '').strip()
+    sms_admin_role = get_user_role(request.user)
+    can_manage_sms = sms_admin_role in {'admin', 'manager'}
 
     if not display_name:
         customer = getattr(request.user, 'customer_profile', None)
@@ -452,7 +618,64 @@ def settings_view(request):
     if not display_name:
         display_name = str(request.user.username).replace('.', ' ').replace('_', ' ')
 
+    sms_test_form = SMSTestForm(initial={
+        'recipient_phone': getattr(profile, 'phone', '') or getattr(getattr(request.user, 'customer_profile', None), 'phone', '') or '',
+    })
+    sms_provider_status = get_sms_provider_status()
+
+    sms_logs = []
+    sms_audit_logs = []
+    if can_manage_sms:
+        sms_logs = list(
+            SMSDeliveryLog.objects.select_related('transaction', 'transaction__customer')
+            .order_by('-created_at')[:20]
+        )
+        sms_audit_logs = list(
+            PaymentAuditLog.objects.select_related('transaction', 'payment', 'user')
+            .order_by('-created_at')[:20]
+        )
+
     if request.method == "POST":
+        if "send_test_sms" in request.POST:
+            if not can_manage_sms:
+                messages.error(request, "You are not allowed to send test SMS messages.")
+                return redirect("settings")
+
+            sms_test_form = SMSTestForm(request.POST)
+            if sms_test_form.is_valid():
+                recipient_phone = normalize_phone_number(sms_test_form.cleaned_data['recipient_phone'])
+                if not recipient_phone:
+                    messages.error(request, "Please enter a valid phone number.")
+                    return redirect("settings")
+                else:
+                    message = build_test_sms_message()
+                    reference = f"TEST-{request.user.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+                    try:
+                        log, queued = queue_sms_delivery(
+                            reference=reference,
+                            recipient_phone=recipient_phone,
+                            customer_name=display_name,
+                            customer_email=request.user.email or '',
+                            message=message,
+                            purpose='test_sms',
+                            user=request.user,
+                            metadata={'source': 'dashboard_settings_test_sms'},
+                        )
+                        record_payment_audit(
+                            'admin_action',
+                            'Admin triggered a test SMS from the settings page.',
+                            user=request.user,
+                            metadata={'sms_delivery_log_id': getattr(log, 'id', None), 'recipient_phone': recipient_phone},
+                        )
+                        if queued:
+                            messages.success(request, f"Test SMS queued for {recipient_phone}.")
+                        else:
+                            messages.info(request, "That test SMS was already queued or sent.")
+                    except Exception as error:
+                        messages.error(request, f"Unable to queue test SMS: {error}")
+            else:
+                messages.error(request, "Please provide a valid recipient phone number for the test SMS.")
+            return redirect("settings")
         if "save_preferences" in request.POST:
             avatar_form = AvatarUploadForm(instance=profile)
             preferences_form = ProfilePreferencesForm(request.POST, instance=profile)
@@ -481,6 +704,11 @@ def settings_view(request):
             "avatar_form": avatar_form,
             "preferences_form": preferences_form,
             "display_name": display_name,
+            "sms_test_form": sms_test_form,
+            "sms_provider_status": sms_provider_status,
+            "sms_logs": sms_logs,
+            "sms_audit_logs": sms_audit_logs,
+            "can_manage_sms": can_manage_sms,
         },
     )
 
@@ -898,6 +1126,24 @@ def dashboard_live_stats_api(request):
                 'status': txn.status.capitalize(),
                 'time': txn.created_at.strftime('%I:%M %p') if txn.created_at else 'N/A',
             })
+
+        recent_payments = Payment.objects.select_related('transaction', 'transaction__customer').filter(
+            transaction__created_at__date=today,
+            status='completed',
+        ).order_by('-created_at')[:5]
+
+        recent_payments_data = []
+        for payment in recent_payments:
+            transaction = payment.transaction
+            customer_name = payment.customer_name or (transaction.customer.first_name + ' ' + transaction.customer.last_name if transaction.customer else 'N/A')
+            recent_payments_data.append({
+                'reference': payment.reference,
+                'customer_name': customer_name,
+                'amount': float(payment.amount),
+                'method': payment.payment_method.replace('_', ' ').title(),
+                'status': payment.status.capitalize(),
+                'time': payment.created_at.strftime('%I:%M %p') if payment.created_at else 'N/A',
+            })
         
         # Get fuel inventory status
         fuel_inventories = FuelInventory.objects.select_related('fuel_type').exclude(fuel_type__name__iexact='lpg')
@@ -921,6 +1167,7 @@ def dashboard_live_stats_api(request):
                 'total_pumps': total_pumps,
             },
             'recent_transactions': recent_txns_data,
+            'recent_payments': recent_payments_data,
             'signature': _build_dashboard_live_signature(),  # Used to detect changes
         })
     except Exception as e:

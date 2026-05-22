@@ -10,7 +10,15 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction as db_transaction
 from dashboard.permissions import role_required
+from dashboard.models import refresh_dashboard_summary, refresh_daily_sales_report
 from station.models import Transaction, FuelType, Pump, Customer, Payment
+from .notifications import (
+    build_payment_confirmation_message,
+    build_test_sms_message,
+    get_sms_provider_status,
+    queue_sms_delivery,
+    record_payment_audit,
+)
 from .services import build_qr_code_data_uri, build_receipt_pdf, normalize_phone_number
 from .services import pretty_phone_formats
 from .services import send_sms_message
@@ -36,6 +44,131 @@ def _first_non_lpg_fuel_type():
         return FuelType.objects.exclude(name__iexact='lpg').first()
     except Exception:
         return None
+
+
+def _clean_text(value):
+    return str(value).strip() if value not in (None, '') else ''
+
+
+def _split_customer_name(full_name, fallback_phone=''):
+    candidate = _clean_text(full_name)
+    if not candidate:
+        candidate = 'Customer'
+
+    parts = [part for part in candidate.split() if part]
+    if not parts:
+        parts = ['Customer']
+
+    first_name = parts[0]
+    last_name = ' '.join(parts[1:]).strip()
+    if not last_name:
+        last_name = _clean_text(fallback_phone) or first_name
+
+    return first_name, last_name
+
+
+def _extract_customer_details_from_payload(payload):
+    payload = payload if isinstance(payload, dict) else {}
+    metadata = payload.get('metadata') if isinstance(payload.get('metadata'), dict) else {}
+    customer = payload.get('customer') if isinstance(payload.get('customer'), dict) else {}
+
+    customer_name = _clean_text(
+        metadata.get('customer_name')
+        or metadata.get('full_name')
+        or metadata.get('name')
+        or customer.get('name')
+        or customer.get('customer_name')
+    )
+    customer_email = _clean_text(
+        metadata.get('customer_email')
+        or metadata.get('email')
+        or customer.get('email')
+    )
+    customer_phone = _clean_text(
+        metadata.get('customer_phone')
+        or metadata.get('phone')
+        or metadata.get('phone_display')
+        or customer.get('phone')
+    )
+    if not customer_phone:
+        customer_phone = _phone_from_paystack_verify_data(payload)
+
+    first_name = _clean_text(metadata.get('customer_first_name') or customer.get('first_name'))
+    last_name = _clean_text(metadata.get('customer_last_name') or customer.get('last_name'))
+
+    if not customer_name and (first_name or last_name):
+        customer_name = ' '.join(part for part in [first_name, last_name] if part).strip()
+
+    return {
+        'customer_name': customer_name,
+        'customer_email': customer_email,
+        'customer_phone': customer_phone,
+        'first_name': first_name,
+        'last_name': last_name,
+    }
+
+
+def _resolve_customer_record(phone, customer_name=None, customer_email=None, first_name=None, last_name=None):
+    normalized_phone = normalize_phone_number(phone)
+    if not normalized_phone:
+        return None, {
+            'customer_name': _clean_text(customer_name),
+            'customer_email': _clean_text(customer_email),
+            'customer_phone': '',
+            'first_name': _clean_text(first_name),
+            'last_name': _clean_text(last_name),
+        }
+
+    existing_customer = Customer.objects.filter(phone=normalized_phone).first()
+    resolved_name = _clean_text(customer_name)
+    resolved_email = _clean_text(customer_email)
+
+    if not resolved_name and (first_name or last_name):
+        resolved_name = ' '.join(part for part in [_clean_text(first_name), _clean_text(last_name)] if part).strip()
+
+    if not resolved_name and existing_customer:
+        resolved_name = ' '.join(part for part in [existing_customer.first_name, existing_customer.last_name] if part).strip()
+
+    if not resolved_name:
+        resolved_name = 'Customer'
+
+    resolved_first, resolved_last = _split_customer_name(resolved_name, normalized_phone)
+
+    if not resolved_email and existing_customer and existing_customer.email:
+        resolved_email = existing_customer.email
+    if not resolved_email:
+        resolved_email = f'{normalized_phone}@fuelsync.com'
+
+    customer, _ = Customer.objects.get_or_create(
+        phone=normalized_phone,
+        defaults={
+            'first_name': resolved_first,
+            'last_name': resolved_last,
+            'email': resolved_email,
+        },
+    )
+
+    update_fields = []
+    if resolved_first and customer.first_name != resolved_first:
+        customer.first_name = resolved_first
+        update_fields.append('first_name')
+    if resolved_last and customer.last_name != resolved_last:
+        customer.last_name = resolved_last
+        update_fields.append('last_name')
+    if resolved_email and customer.email != resolved_email:
+        customer.email = resolved_email
+        update_fields.append('email')
+
+    if update_fields:
+        customer.save(update_fields=update_fields)
+
+    return customer, {
+        'customer_name': ' '.join(part for part in [customer.first_name, customer.last_name] if part).strip(),
+        'customer_email': customer.email or resolved_email,
+        'customer_phone': normalized_phone,
+        'first_name': customer.first_name,
+        'last_name': customer.last_name,
+    }
 
 
 def _fuel_type_from_name(fuel_type_name):
@@ -95,21 +228,20 @@ def _apply_transaction_stock_and_pump_delta(fuel_type, pump, liters_delta, amoun
                 locked_pump.save(update_fields=['total_liters_dispensed', 'total_revenue'])
 
 
-def _upsert_dashboard_transaction(reference, phone, amount, paystack_data=None, liters=None, fuel_type_name=None):
+def _upsert_dashboard_transaction(reference, phone, amount, paystack_data=None, liters=None, fuel_type_name=None, customer_name=None, customer_email=None):
     """Save a successful Paystack payment into the local transaction table."""
     if not reference:
         return None
 
     normalized_phone = str(phone or '').strip() or None
-    customer = None
-    if normalized_phone:
-        customer, _ = Customer.objects.get_or_create(
-            phone=normalized_phone,
-            defaults={
-                'first_name': 'Paystack',
-                'last_name': normalized_phone,
-            },
-        )
+    payload_customer = _extract_customer_details_from_payload(paystack_data)
+    customer, customer_details = _resolve_customer_record(
+        normalized_phone,
+        customer_name=customer_name or payload_customer.get('customer_name'),
+        customer_email=customer_email or payload_customer.get('customer_email'),
+        first_name=payload_customer.get('first_name'),
+        last_name=payload_customer.get('last_name'),
+    )
 
     pump = _first_operational_pump()
     fuel_type = _fuel_type_from_name(fuel_type_name) or _first_non_lpg_fuel_type()
@@ -184,6 +316,10 @@ def _upsert_dashboard_transaction(reference, phone, amount, paystack_data=None, 
         'amount': amount_decimal,
         'payment_method': 'paystack',
         'status': 'completed',
+        'customer_name': customer_details.get('customer_name', ''),
+        'customer_email': customer_details.get('customer_email', ''),
+        'customer_phone': customer_details.get('customer_phone', normalized_phone or ''),
+        'paid_at': timezone.now(),
         'provider_response': paystack_data or {},
     }
     Payment.objects.update_or_create(
@@ -193,6 +329,18 @@ def _upsert_dashboard_transaction(reference, phone, amount, paystack_data=None, 
             'reference': reference,
         },
     )
+
+    try:
+        record_payment_audit(
+            'payment_saved',
+            'Payment stored from Paystack confirmation.',
+            transaction=txn,
+            payment=getattr(txn, 'payment', None),
+            reference=reference,
+            metadata={'provider': 'paystack', 'amount': float(amount_decimal), 'phone': normalized_phone},
+        )
+    except Exception:
+        logger.exception('Failed to record payment audit for reference %s', reference)
 
     # Keep inventory and pump analytics in sync with completed Paystack transactions.
     # This must never block Payment persistence.
@@ -217,6 +365,13 @@ def _upsert_dashboard_transaction(reference, phone, amount, paystack_data=None, 
         _apply_transaction_stock_and_pump_delta(delta_fuel_type, delta_pump, liters_delta, amount_delta)
     except Exception as sync_error:
         logger.exception('Post-payment stock/pump sync failed for reference %s: %s', reference, sync_error)
+
+    try:
+        summary_date = timezone.localdate(txn.created_at or timezone.now())
+        refresh_dashboard_summary(summary_date)
+        refresh_daily_sales_report(summary_date)
+    except Exception as summary_error:
+        logger.exception('Failed to refresh dashboard summary for reference %s: %s', reference, summary_error)
 
     # Update customer's cached totals so the Customers page reflects payments.
     # We apply the same delta we used for pump/inventory so values stay consistent.
@@ -247,7 +402,7 @@ def _extract_payer_contacts(data):
 
     if not email:
         metadata = data.get('metadata') if isinstance(data.get('metadata'), dict) else {}
-        email = metadata.get('email') or ""
+        email = metadata.get('email') or metadata.get('customer_email') or ""
 
     return str(phone or "").strip(), str(email or "").strip()
 
@@ -316,6 +471,64 @@ def _send_receipt_sms(transaction, phone, receipt_url):
     return send_sms_message(phone, message)
 
 
+def _dispatch_payment_confirmation_to_payment_contact(transaction, paystack_data=None):
+    payment = getattr(transaction, 'payment', None)
+    phone = ''
+    customer_name = ''
+    customer_email = ''
+
+    if payment and getattr(payment, 'customer_phone', None):
+        phone = payment.customer_phone
+        customer_name = payment.customer_name or ''
+        customer_email = payment.customer_email or ''
+    elif transaction.customer and getattr(transaction.customer, 'phone', None):
+        phone = transaction.customer.phone
+        customer_name = ' '.join(part for part in [transaction.customer.first_name, transaction.customer.last_name] if part).strip()
+        customer_email = transaction.customer.email or ''
+    elif isinstance(paystack_data, dict):
+        customer_payload = _extract_customer_details_from_payload(paystack_data)
+        phone = customer_payload.get('customer_phone') or ''
+        customer_name = customer_payload.get('customer_name') or ''
+        customer_email = customer_payload.get('customer_email') or ''
+
+    if not phone:
+        record_payment_audit(
+            'sms_failed',
+            'Payment confirmation SMS could not be queued because no recipient phone was available.',
+            transaction=transaction,
+            payment=payment,
+            reference=transaction.reference_number,
+            metadata={'reason': 'missing_phone'},
+        )
+        return
+
+    message = build_payment_confirmation_message(transaction)
+    log, queued = queue_sms_delivery(
+        transaction=transaction,
+        reference=transaction.reference_number,
+        recipient_phone=phone,
+        customer_name=customer_name,
+        customer_email=customer_email,
+        message=message,
+        purpose='payment_confirmation',
+        metadata={'source': 'paystack_payment_confirmation'},
+    )
+
+    provider_response = transaction.provider_response or {}
+    confirmation_state = provider_response.get('sms_confirmation', {})
+    confirmation_state.update({
+        'attempted_at': timezone.localtime(timezone.now()).isoformat(),
+        'phone': phone,
+        'customer_name': customer_name,
+        'message': message,
+        'queued': bool(queued),
+        'sms_delivery_log_id': getattr(log, 'id', None),
+    })
+    provider_response['sms_confirmation'] = confirmation_state
+    transaction.provider_response = provider_response
+    transaction.save(update_fields=['provider_response'])
+
+
 def _dispatch_receipt_to_payment_contact(transaction, paystack_data, request=None):
     """Best-effort dispatch of receipt to the payer contact used for payment.
 
@@ -325,6 +538,15 @@ def _dispatch_receipt_to_payment_contact(transaction, paystack_data, request=Non
     receipt_dispatch = provider_response.get('receipt_dispatch', {})
 
     # Avoid duplicate sends if verify/webhook are both called.
+
+    try:
+        _dispatch_payment_confirmation_to_payment_contact(transaction, paystack_data=paystack_data)
+    except Exception as sms_error:
+        try:
+            ref = getattr(transaction, 'reference_number', '')
+        except Exception:
+            ref = ''
+        logger.exception('Failed to send payment confirmation SMS for reference %s: %s', ref, sms_error)
     if receipt_dispatch.get('email_sent') or receipt_dispatch.get('sms_sent'):
         return
 
@@ -368,13 +590,13 @@ def _phone_from_paystack_verify_data(data):
         return ""
     metadata = data.get("metadata")
     if isinstance(metadata, dict):
-        found = metadata.get("phone") or metadata.get("phone_display")
+        found = metadata.get("phone") or metadata.get("customer_phone") or metadata.get("phone_display")
         if found:
             return str(found)
     return ""
 
 
-def _initialize_paystack_transaction(request, amount, phone, liters=None, fuel_type_name=None):
+def _initialize_paystack_transaction(request, amount, phone, liters=None, fuel_type_name=None, customer_name=None, customer_email=None, first_name=None, last_name=None):
     phone_normalized = normalize_phone_number(phone)
     if not amount or not phone_normalized:
         return None, None, None, None
@@ -382,22 +604,38 @@ def _initialize_paystack_transaction(request, amount, phone, liters=None, fuel_t
     # Build readable phone/email displays
     phone_formats = pretty_phone_formats(phone_normalized)
 
-    # Prefer a real email if available:
-    # 1. If the current user is authenticated and has an email, use that
-    # 2. Else if the request includes an `email` parameter (GET or POST) and it looks valid, use it
-    # 3. Otherwise fall back to a constructed email based on the normalized phone
-    email_param = None
-    try:
-        email_param = request.GET.get('email') or request.POST.get('email')
-    except Exception:
-        email_param = None
+    request_customer_name = _clean_text(
+        customer_name
+        or request.GET.get('customer_name')
+        or request.GET.get('name')
+        or request.GET.get('full_name')
+        or request.POST.get('customer_name')
+        or request.POST.get('name')
+        or request.POST.get('full_name')
+    )
+    request_customer_email = _clean_text(
+        customer_email
+        or request.GET.get('customer_email')
+        or request.GET.get('email')
+        or request.POST.get('customer_email')
+        or request.POST.get('email')
+    )
+    request_first_name = _clean_text(first_name or request.GET.get('first_name') or request.POST.get('first_name'))
+    request_last_name = _clean_text(last_name or request.GET.get('last_name') or request.POST.get('last_name'))
 
-    if getattr(request, 'user', None) and request.user.is_authenticated and getattr(request.user, 'email', None):
-        email = request.user.email
-    elif email_param and '@' in email_param:
-        email = email_param
-    else:
-        email = phone_normalized + "@fuelsync.com"
+    existing_customer = Customer.objects.filter(phone=phone_normalized).first()
+    if not request_customer_name and existing_customer:
+        request_customer_name = ' '.join(part for part in [existing_customer.first_name, existing_customer.last_name] if part).strip()
+    if not request_customer_email and existing_customer and existing_customer.email:
+        request_customer_email = existing_customer.email
+    if not request_customer_name and (request_first_name or request_last_name):
+        request_customer_name = ' '.join(part for part in [request_first_name, request_last_name] if part).strip()
+    if not request_customer_name:
+        request_customer_name = 'Customer'
+    if not request_customer_email:
+        request_customer_email = f'{phone_normalized}@fuelsync.com'
+
+    email = request_customer_email
 
     # Build an email_display for UI (more readable). If using a real email, show it as-is.
     if email.endswith('@fuelsync.com') and (email.startswith(phone_normalized)):
@@ -413,11 +651,21 @@ def _initialize_paystack_transaction(request, amount, phone, liters=None, fuel_t
         "phone": phone_normalized,
         "callback_url": request.build_absolute_uri("/payment/verify/"),
         "metadata": {
+            "customer_name": request_customer_name,
+            "customer_email": request_customer_email,
+            "customer_phone": phone_normalized,
+            "customer_first_name": request_first_name,
+            "customer_last_name": request_last_name,
             "phone": phone_normalized,
             "phone_display": phone,
             "liters": str(liters or ""),
             "fuel_type": str(fuel_type_name or ""),
         },
+        "custom_fields": [
+            {"display_name": "Customer Name", "variable_name": "customer_name", "value": request_customer_name},
+            {"display_name": "Customer Email", "variable_name": "customer_email", "value": request_customer_email},
+            {"display_name": "Customer Phone", "variable_name": "customer_phone", "value": phone_normalized},
+        ],
     }
 
     headers = {
@@ -449,6 +697,9 @@ def _initialize_paystack_transaction(request, amount, phone, liters=None, fuel_t
         "public_key": settings.PAYSTACK_PUBLIC_KEY,
         "email": email,
         "email_display": email_display,
+        "customer_name": request_customer_name,
+        "customer_email": request_customer_email,
+        "customer_phone": phone_normalized,
         "amount": float(amount),
         "amount_in_pesewas": amount_in_pesewas,
         "reference": reference,
@@ -518,12 +769,28 @@ def initialize_payment_api(request):
         phone = payload.get("phone")
         liters = payload.get("liters")
         fuel_type_name = payload.get("fuel_type")
+        customer_name = payload.get("customer_name") or payload.get("name") or payload.get("full_name")
+        customer_email = payload.get("customer_email") or payload.get("email")
+        customer_first_name = payload.get("first_name")
+        customer_last_name = payload.get("last_name")
 
         phone_normalized = normalize_phone_number(phone)
         if not amount or not phone_normalized:
             return JsonResponse({"status": False, "message": "Amount and phone are required"}, status=400)
 
-        email = phone_normalized + "@fuelsync.com"
+        existing_customer = Customer.objects.filter(phone=phone_normalized).first()
+        if not customer_name and existing_customer:
+            customer_name = ' '.join(part for part in [existing_customer.first_name, existing_customer.last_name] if part).strip()
+        if not customer_email and existing_customer and existing_customer.email:
+            customer_email = existing_customer.email
+        if not customer_name and (customer_first_name or customer_last_name):
+            customer_name = ' '.join(part for part in [customer_first_name, customer_last_name] if part).strip()
+        if not customer_name:
+            customer_name = 'Customer'
+        if not customer_email:
+            customer_email = f'{phone_normalized}@fuelsync.com'
+
+        email = customer_email
         data = {
             "email": email,
             "amount": int(float(amount) * 100),
@@ -532,11 +799,21 @@ def initialize_payment_api(request):
             "phone": phone_normalized,
             "callback_url": request.build_absolute_uri("/payment/verify/"),
             "metadata": {
+                "customer_name": customer_name,
+                "customer_email": customer_email,
+                "customer_phone": phone_normalized,
+                "customer_first_name": customer_first_name or "",
+                "customer_last_name": customer_last_name or "",
                 "phone": phone_normalized,
                 "phone_display": phone,
                 "liters": str(liters or ""),
                 "fuel_type": str(fuel_type_name or ""),
             },
+            "custom_fields": [
+                {"display_name": "Customer Name", "variable_name": "customer_name", "value": customer_name},
+                {"display_name": "Customer Email", "variable_name": "customer_email", "value": customer_email},
+                {"display_name": "Customer Phone", "variable_name": "customer_phone", "value": phone_normalized},
+            ],
         }
 
         headers = {
@@ -569,6 +846,9 @@ def initialize_payment_api(request):
             "message": "Payment initialized",
             "data": {
                 "email": email,
+                "customer_name": customer_name,
+                "customer_email": customer_email,
+                "customer_phone": phone_normalized,
                 "amount": float(amount),
                 "phone": phone_normalized,
                 "liters": liters,
@@ -695,6 +975,12 @@ def verify_payment(request):
                 inferred_liters = _infer_liters_from_amount(amount, fuel_type_name=fuel_type_name)
                 liters = float(inferred_liters) if inferred_liters is not None else None
 
+            record_payment_audit(
+                'payment_verified',
+                'Paystack transaction verified successfully.',
+                reference=reference,
+                metadata={'phone': phone, 'amount': amount, 'source': 'verify_payment'},
+            )
             transaction = _upsert_dashboard_transaction(reference, phone, amount, data, liters=liters, fuel_type_name=fuel_type_name)
             logger.info(f"Saved local transaction for reference {reference} (id={getattr(transaction, 'id', None)})")
 
@@ -777,6 +1063,12 @@ def verify_payment_api(request):
                 inferred_liters = _infer_liters_from_amount(amount, fuel_type_name=fuel_type_name)
                 liters = float(inferred_liters) if inferred_liters is not None else None
 
+            record_payment_audit(
+                'payment_verified',
+                'Paystack transaction verified successfully via API.',
+                reference=reference,
+                metadata={'phone': phone, 'amount': amount, 'source': 'verify_payment_api'},
+            )
             transaction = _upsert_dashboard_transaction(reference, phone, amount, data, liters=liters, fuel_type_name=fuel_type_name)
 
             try:
@@ -882,6 +1174,12 @@ def paystack_webhook(request):
             logger.error(f"[WEBHOOK-{webhook_id}] ❌ SIGNATURE VALIDATION FAILED")
             logger.error(f"[WEBHOOK-{webhook_id}] Expected: {computed[:16]}...")
             logger.error(f"[WEBHOOK-{webhook_id}] Got:      {signature[:16] if signature else 'NONE'}...")
+            record_payment_audit(
+                'webhook_rejected',
+                'Rejected Paystack webhook with invalid signature.',
+                reference='',
+                metadata={'webhook_id': webhook_id, 'signature_present': bool(signature)},
+            )
             return HttpResponse(status=400)
         
         logger.info(f"[WEBHOOK-{webhook_id}] ✓ Signature validated successfully")
@@ -898,10 +1196,17 @@ def paystack_webhook(request):
         
         logger.info(f"[WEBHOOK-{webhook_id}] Event type: {event}")
         logger.debug(f"[WEBHOOK-{webhook_id}] Full payload: {json.dumps(payload, default=str)}")
+        record_payment_audit(
+            'webhook_verified',
+            'Verified Paystack webhook signature.',
+            reference=str(data.get('reference') or data.get('id') or ''),
+            metadata={'webhook_id': webhook_id, 'event': event},
+        )
 
         # Handle successful transaction events
         reference = data.get('reference') or data.get('id')
         status = data.get('status')
+        extracted_customer = _extract_customer_details_from_payload(data)
         
         logger.info(f"[WEBHOOK-{webhook_id}] Transaction reference: {reference}")
         logger.info(f"[WEBHOOK-{webhook_id}] Transaction status from Paystack: {status}")
@@ -910,10 +1215,10 @@ def paystack_webhook(request):
             logger.info(f"[WEBHOOK-{webhook_id}] ✓ Processing successful payment")
             
             # Extract transaction details from Paystack
-            phone = None
+            phone = extracted_customer.get('customer_phone') or None
             amount = None
             metadata = data.get('metadata') or {}
-            phone = metadata.get('phone') or metadata.get('phone_display')
+            phone = phone or metadata.get('phone') or metadata.get('phone_display')
             
             # Amount is in pesewas (smallest unit), convert to GHS
             amt = data.get('amount')
@@ -925,6 +1230,8 @@ def paystack_webhook(request):
                     amount = None
             
             logger.info(f"[WEBHOOK-{webhook_id}] Extracted phone: {phone}")
+            logger.info(f"[WEBHOOK-{webhook_id}] Extracted customer name: {extracted_customer.get('customer_name')}")
+            logger.info(f"[WEBHOOK-{webhook_id}] Extracted customer email: {extracted_customer.get('customer_email')}")
             logger.info(f"[WEBHOOK-{webhook_id}] Extracted amount: {amount} GHS")
             
             if not phone or not amount:
@@ -936,8 +1243,20 @@ def paystack_webhook(request):
             # Use atomic transaction to ensure consistency
             with db_transaction.atomic():
                 # Try to get existing transaction by reference_number
-                txn = _upsert_dashboard_transaction(reference, phone, amount, data)
+                txn = _upsert_dashboard_transaction(
+                    reference,
+                    phone,
+                    amount,
+                    data,
+                    customer_name=extracted_customer.get('customer_name'),
+                    customer_email=extracted_customer.get('customer_email'),
+                )
                 logger.info(f"[WEBHOOK-{webhook_id}] ✓ Local transaction upserted: {getattr(txn, 'id', None)}")
+                try:
+                    if txn is not None:
+                        _dispatch_receipt_to_payment_contact(txn, data)
+                except Exception as dispatch_err:
+                    logger.exception('[WEBHOOK-%s] Failed to dispatch receipt for reference %s: %s', webhook_id, reference, dispatch_err)
         else:
             logger.info(f"[WEBHOOK-{webhook_id}] Skipping non-successful transaction (status: {status})")
 

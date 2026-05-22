@@ -125,6 +125,7 @@
             
             // Update recent transactions table
             this.updateRecentTransactions(data.recent_transactions);
+            this.updateRecentPayments(data.recent_payments);
             
             // Trigger custom event for other scripts to listen to
             const event = new CustomEvent('dashboardUpdated', { detail: data });
@@ -150,7 +151,7 @@
          * Update recent transactions table
          */
         updateRecentTransactions: function(transactions) {
-            const tableBody = document.querySelector('table tbody');
+            const tableBody = document.getElementById('recent-transactions-body');
             if (!tableBody) return;
             
             // Only update if we have transactions
@@ -171,6 +172,30 @@
                 `;
             });
             
+            tableBody.innerHTML = newHtml;
+        },
+
+        /**
+         * Update recent payments table
+         */
+        updateRecentPayments: function(payments) {
+            const tableBody = document.getElementById('recent-payments-body');
+            if (!tableBody || !payments || payments.length === 0) return;
+
+            let newHtml = '';
+            payments.forEach(payment => {
+                newHtml += `
+                    <tr>
+                        <td><strong>${payment.reference}</strong></td>
+                        <td>${payment.customer_name}</td>
+                        <td>GHS ${Number(payment.amount).toFixed(2)}</td>
+                        <td>${payment.method}</td>
+                        <td><span class="badge badge-success">${payment.status}</span></td>
+                        <td>${payment.time}</td>
+                    </tr>
+                `;
+            });
+
             tableBody.innerHTML = newHtml;
         },
         

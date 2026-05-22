@@ -4,7 +4,7 @@ from django.urls import reverse
 from .models import (
     FuelType, FuelInventory, Pump, StaffRole, Staff, Customer,
     LoyaltyTier, CustomerReward, Transaction, Receipt, Notification,
-    FuelPriceHistory, DailySalesReport, AuditLog
+    FuelPriceHistory, DailySalesReport, AuditLog, Payment
 )
 
 
@@ -238,6 +238,31 @@ class ReceiptAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # Prevent deletion except by superusers
         return request.user.is_superuser
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ['reference', 'customer_name', 'customer_phone', 'amount', 'status', 'paid_at', 'created_at']
+    list_filter = ['status', 'payment_method', 'created_at', 'paid_at']
+    search_fields = ['reference', 'customer_name', 'customer_email', 'customer_phone', 'transaction__transaction_id']
+    readonly_fields = ['created_at', 'updated_at', 'paid_at']
+
+    fieldsets = (
+        ('Payment Details', {
+            'fields': ('transaction', 'reference', 'status', 'payment_method', 'amount', 'paid_at')
+        }),
+        ('Customer Details', {
+            'fields': ('customer_name', 'customer_email', 'customer_phone')
+        }),
+        ('Provider', {
+            'fields': ('provider_response',),
+            'classes': ('collapse',),
+        }),
+        ('System', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
 
 
 @admin.register(Notification)

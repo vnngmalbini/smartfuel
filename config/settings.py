@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import dj_database_url
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -96,10 +98,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
     }
 }
 
@@ -149,12 +156,33 @@ MEDIA_ROOT = BASE_DIR / 'media'
 PAYSTACK_SECRET_KEY = config("PAYSTACK_SECRET_KEY")
 PAYSTACK_PUBLIC_KEY = config("PAYSTACK_PUBLIC_KEY", default="")
 SITE_BASE_URL = config("SITE_BASE_URL", default="http://127.0.0.1:8000")
+PAYSTACK_WEBHOOK_URL = config(
+    "PAYSTACK_WEBHOOK_URL",
+    default=f"{SITE_BASE_URL.rstrip('/')}/payment/webhook/",
+)
 
-# SMS delivery (Twilio-compatible)
+# SMS delivery (Hubtel / Arkesel / Twilio)
 SMS_ENABLED = config("SMS_ENABLED", default=False, cast=bool)
+SMS_PROVIDER = config("SMS_PROVIDER", default="twilio").strip().lower()
+SMS_SENDER_ID = config("SMS_SENDER_ID", default="")
+
 TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID", default="")
 TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN", default="")
 TWILIO_FROM_NUMBER = config("TWILIO_FROM_NUMBER", default="")
+
+HUBTEL_CLIENT_ID = config("HUBTEL_CLIENT_ID", default="")
+HUBTEL_CLIENT_SECRET = config("HUBTEL_CLIENT_SECRET", default="")
+HUBTEL_SMS_URL = config("HUBTEL_SMS_URL", default="https://sms.hubtel.com/v1/messages/send")
+HUBTEL_BALANCE_URL = config("HUBTEL_BALANCE_URL", default="")
+
+ARKESEL_API_KEY = config("ARKESEL_API_KEY", default="")
+ARKESEL_SMS_URL = config("ARKESEL_SMS_URL", default="https://sms.arkesel.com/api/v2/sms/send")
+ARKESEL_BALANCE_URL = config("ARKESEL_BALANCE_URL", default="")
+
+CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://127.0.0.1:6379/0")
+CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default=CELERY_BROKER_URL)
+CELERY_TASK_ALWAYS_EAGER = config("CELERY_TASK_ALWAYS_EAGER", default=False, cast=bool)
+CELERY_TASK_EAGER_PROPAGATES = config("CELERY_TASK_EAGER_PROPAGATES", default=False, cast=bool)
 
 # Email defaults for PDF receipt delivery
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="no-reply@fuelsync.com")

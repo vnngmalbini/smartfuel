@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import PaymentProvider, PaymentGatewayLog, CardToken
+from .models import PaymentProvider, PaymentGatewayLog, CardToken, SMSDeliveryLog, PaymentAuditLog
 
 
 @admin.register(PaymentProvider)
@@ -101,4 +101,42 @@ class CardTokenAdmin(admin.ModelAdmin):
 
 	def has_delete_permission(self, request, obj=None):
 		# Only superusers can delete
+		return request.user.is_superuser
+
+
+@admin.register(SMSDeliveryLog)
+class SMSDeliveryLogAdmin(admin.ModelAdmin):
+	list_display = ['reference', 'purpose', 'provider', 'recipient_phone', 'customer_name', 'status', 'attempt_count', 'queued_at', 'sent_at']
+	list_filter = ['purpose', 'provider', 'status', 'created_at', 'sent_at']
+	search_fields = ['reference', 'recipient_phone', 'customer_name', 'customer_email', 'transaction__transaction_id']
+	readonly_fields = ['queued_at', 'sent_at', 'created_at', 'updated_at', 'provider_response']
+
+	fieldsets = (
+		('Delivery', {
+			'fields': ('transaction', 'purpose', 'provider', 'status', 'attempt_count', 'max_attempts')
+		}),
+		('Customer', {
+			'fields': ('recipient_phone', 'customer_name', 'customer_email', 'reference')
+		}),
+		('Message', {
+			'fields': ('message', 'provider_message_id', 'provider_response', 'error_message', 'next_retry_at')
+		}),
+		('System', {
+			'fields': ('queued_at', 'sent_at', 'created_at', 'updated_at'),
+			'classes': ('collapse',),
+		}),
+	)
+
+
+@admin.register(PaymentAuditLog)
+class PaymentAuditLogAdmin(admin.ModelAdmin):
+	list_display = ['reference', 'event_type', 'user', 'created_at']
+	list_filter = ['event_type', 'created_at']
+	search_fields = ['reference', 'message', 'transaction__transaction_id', 'payment__reference', 'user__username']
+	readonly_fields = ['created_at']
+
+	def has_add_permission(self, request):
+		return False
+
+	def has_delete_permission(self, request, obj=None):
 		return request.user.is_superuser

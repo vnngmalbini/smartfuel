@@ -112,6 +112,165 @@
             </div>
         </div>
     </div>
+
+    {% if can_manage_sms %}
+    <div class="row mt-4">
+        <div class="col-lg-4">
+            <div class="card settings-card h-100">
+                <div class="card-header">
+                    <h3><i class="bi bi-broadcast"></i> SMS Provider Status</h3>
+                </div>
+                <div class="card-body">
+                    <div class="settings-grid">
+                        <div class="settings-row">
+                            <span class="label">Active Provider</span>
+                            <span class="value">{{ sms_provider_status.provider_label }}</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">SMS Enabled</span>
+                            <span class="status-badge {% if sms_provider_status.sms_enabled %}on{% else %}off{% endif %}">{% if sms_provider_status.sms_enabled %}Enabled{% else %}Disabled{% endif %}</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">Credentials</span>
+                            <span class="status-badge {% if sms_provider_status.credentials_ok %}on{% else %}off{% endif %}">{% if sms_provider_status.credentials_ok %}Configured{% else %}Missing{% endif %}</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">Health</span>
+                            <span class="status-badge {% if sms_provider_status.health_ok %}on{% else %}off{% endif %}">{% if sms_provider_status.health_ok %}Healthy{% else %}Needs attention{% endif %}</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">Balance / Credit</span>
+                            <span class="value">
+                                {% if sms_provider_status.balance_supported %}
+                                    {% if sms_provider_status.balance is not None %}
+                                        {{ sms_provider_status.balance }} {% if sms_provider_status.balance_currency %}{{ sms_provider_status.balance_currency }}{% endif %}
+                                    {% else %}
+                                        Not available
+                                    {% endif %}
+                                {% else %}
+                                    Unsupported
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% if sms_provider_status.message %}
+                    <p class="help-text mt-2">{{ sms_provider_status.message }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card settings-card h-100">
+                <div class="card-header">
+                    <h3><i class="bi bi-send-check"></i> Send Test SMS</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="preferences-form">
+                        {% csrf_token %}
+                        <div class="settings-grid">
+                            <label class="settings-row" for="id_recipient_phone">
+                                <span>
+                                    <span class="label">Recipient Phone</span>
+                                    <span class="help-text">Use your own phone or a test recipient to verify the configured provider.</span>
+                                </span>
+                            </label>
+                            {{ sms_test_form.recipient_phone }}
+                        </div>
+                        {% if sms_test_form.errors %}
+                            <div class="alert alert-danger mt-2">Please provide a valid recipient phone number.</div>
+                        {% endif %}
+                        <button type="submit" name="send_test_sms" value="1" class="btn btn-primary btn-sm upload-btn">Send Test SMS</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <div class="card settings-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="bi bi-list-check"></i> SMS Delivery Logs</h3>
+                    <span class="help-text">Latest queued, sent, failed, and retrying messages</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Reference</th>
+                                    <th>Customer</th>
+                                    <th>Phone</th>
+                                    <th>Provider</th>
+                                    <th>Status</th>
+                                    <th>Attempts</th>
+                                    <th>Queued</th>
+                                    <th>Sent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in sms_logs %}
+                                <tr>
+                                    <td><strong>{{ log.reference }}</strong></td>
+                                    <td>{{ log.customer_name|default:'N/A' }}</td>
+                                    <td>{{ log.recipient_phone }}</td>
+                                    <td>{{ log.provider|title }}</td>
+                                    <td><span class="status-badge {% if log.status == 'sent' %}on{% elif log.status == 'failed' %}off{% else %}pending{% endif %}">{{ log.status|title }}</span></td>
+                                    <td>{{ log.attempt_count }}/{{ log.max_attempts }}</td>
+                                    <td>{{ log.queued_at|date:'d M Y, H:i' }}</td>
+                                    <td>{{ log.sent_at|default:'-'|date:'d M Y, H:i' }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="8" class="text-muted">No SMS delivery logs yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <div class="card settings-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="bi bi-shield-check"></i> SMS / Payment Audit Trail</h3>
+                    <span class="help-text">Payment confirmations, webhook verification, retries, and admin actions</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Reference</th>
+                                    <th>User</th>
+                                    <th>Message</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for audit in sms_audit_logs %}
+                                <tr>
+                                    <td>{{ audit.event_type|title }}</td>
+                                    <td>{{ audit.reference|default:'-' }}</td>
+                                    <td>{{ audit.user.username|default:'System' }}</td>
+                                    <td>{{ audit.message }}</td>
+                                    <td>{{ audit.created_at|date:'d M Y, H:i' }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5" class="text-muted">No audit records yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <style>

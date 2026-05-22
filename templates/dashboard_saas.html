@@ -24,6 +24,116 @@
         width: 100% !important;
         max-width: none !important;
     }
+
+    .dashboard-role-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 14px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(37, 99, 235, 0.14);
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(15, 23, 42, 0.04));
+        color: #0f172a;
+        font-size: 0.86rem;
+        font-weight: 700;
+    }
+
+    .dashboard-role-chip span {
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .analytics-panel {
+        overflow: hidden;
+    }
+
+    .analytics-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .analytics-period-list {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding: 6px;
+        border-radius: 999px;
+        background: #f8fafc;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .analytics-period-button {
+        border: 0;
+        background: transparent;
+        padding: 9px 13px;
+        border-radius: 999px;
+        color: #64748b;
+        font-size: 0.84rem;
+        font-weight: 700;
+    }
+
+    .analytics-period-button.active {
+        color: #fff;
+        background: linear-gradient(135deg, #0f172a 0%, #2563eb 100%);
+        box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+    }
+
+    .analytics-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+
+    .analytics-stat-card {
+        padding: 16px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+    }
+
+    .analytics-stat-card span {
+        display: block;
+        color: #64748b;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+    }
+
+    .analytics-stat-card strong {
+        display: block;
+        margin-top: 6px;
+        color: #0f172a;
+        font-size: 1.45rem;
+        letter-spacing: -0.04em;
+    }
+
+    .analytics-stat-card small {
+        display: block;
+        margin-top: 4px;
+        color: #64748b;
+    }
+
+    .analytics-stat-card--blue { border-top: 3px solid #2563eb; }
+    .analytics-stat-card--green { border-top: 3px solid #22c55e; }
+    .analytics-stat-card--orange { border-top: 3px solid #f59e0b; }
+    .analytics-stat-card--navy { border-top: 3px solid #0f172a; }
+
+    .analytics-note {
+        padding: 14px 16px;
+        margin-bottom: 16px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(15, 23, 42, 0.03));
+        color: #334155;
+        border: 1px solid rgba(37, 99, 235, 0.12);
+    }
 </style>
 {% endblock %}
 
@@ -73,6 +183,13 @@
                 <div class="topbar-greeting">Good {{ greeting }}, {{ display_name }}</div>
                 <h1>FuelSync command center</h1>
                 <p>Premium station operations, sales intelligence, and inventory control in one place.</p>
+                <div class="dashboard-role-chip">
+                    <i class="bi bi-shield-lock"></i>
+                    <div>
+                        {{ user_role_label }} access
+                        <span>{% if can_view_revenue_analytics %}Revenue analytics enabled{% else %}Today-only revenue view{% endif %}</span>
+                    </div>
+                </div>
             </div>
 
             <div class="topbar-actions">
@@ -114,19 +231,52 @@
             {% endfor %}
         </section>
 
-        <section class="analytics-grid">
-            <article class="panel panel--large">
-                <div class="panel-head">
-                    <div>
-                        <div class="section-tag">Analytics</div>
-                        <h2>Revenue trend</h2>
+        <section class="panel analytics-panel">
+            <div class="panel-head">
+                <div>
+                    <div class="section-tag">Revenue intelligence</div>
+                    <h2>{% if can_view_revenue_analytics %}Revenue analytics by time window{% else %}Today's revenue snapshot{% endif %}</h2>
+                    <p class="panel-caption" style="margin-top: 6px;">
+                        {% if can_view_revenue_analytics %}
+                        Switch between today, 7-day, 30-day, 90-day, and year-to-date performance.
+                        {% else %}
+                        Daily revenue visibility is limited to the current day for attendant access.
+                        {% endif %}
+                    </p>
+                </div>
+                {% if can_view_revenue_analytics %}
+                <div class="analytics-toolbar">
+                    <span class="panel-caption">Change window</span>
+                    <div class="analytics-period-list" role="tablist" aria-label="Revenue analytics period selector">
+                        {% for period_key, period_meta in revenue_chart_periods.items %}
+                        <button type="button" class="analytics-period-button{% if can_view_revenue_analytics and period_key == '30d' or not can_view_revenue_analytics and period_key == 'today' %} active{% endif %}" data-analytics-period="{{ period_key }}">
+                            {{ period_meta.label }}
+                        </button>
+                        {% endfor %}
                     </div>
-                    <span class="panel-caption">Updated live</span>
                 </div>
-                <div class="chart-shell">
-                    <canvas id="revenueChart" height="160"></canvas>
-                </div>
-            </article>
+                {% endif %}
+            </div>
+
+            {% if can_view_revenue_analytics %}
+            <div class="analytics-card-grid">
+                {% for card in analytics_cards %}
+                <article class="analytics-stat-card analytics-stat-card--{{ card.tone }}">
+                    <span>{{ card.label }}</span>
+                    <strong>{{ card.value }}</strong>
+                    <small>{{ card.subtitle }}</small>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="analytics-note">
+                Today’s revenue is visible here, but historical revenue analytics are restricted to Admin and Manager roles.
+            </div>
+            {% endif %}
+
+            <div class="chart-shell">
+                <canvas id="revenueChart" height="160"></canvas>
+            </div>
         </section>
 
         <section class="operations-grid">
@@ -195,7 +345,7 @@
                                 <th>Time</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="recent-payments-body">
                             {% for payment in recent_payments %}
                             <tr>
                                 <td><strong>{{ payment.reference }}</strong></td>
@@ -232,6 +382,8 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ revenue_chart_periods|json_script:"revenue-chart-periods" }}
+{{ revenue_chart_data|json_script:"revenue-chart-data" }}
 {{ sparkline_map|json_script:"sparkline-map" }}
 {{ revenue_trend_labels|json_script:"revenue-labels" }}
 {{ revenue_trend_values|json_script:"revenue-values" }}
@@ -247,9 +399,13 @@
     const fuelValues = JSON.parse(document.getElementById('fuel-values').textContent || '[]');
     const weeklyLabels = JSON.parse(document.getElementById('weekly-labels').textContent || '[]');
     const weeklyValues = JSON.parse(document.getElementById('weekly-values').textContent || '[]');
+    const revenueChartPeriods = JSON.parse(document.getElementById('revenue-chart-periods').textContent || '{}');
+    const revenueChartData = JSON.parse(document.getElementById('revenue-chart-data').textContent || '{}');
     const liveSignatureUrl = "{% url 'dashboard_live_signature' %}";
     const liveStatsUrl = "{% url 'dashboard_live_stats_api' %}";
     let currentLiveSignature = "{{ live_signature|escapejs }}";
+    let revenueChartInstance = null;
+    let activeRevenuePeriod = "{% if can_view_revenue_analytics %}30d{% else %}today{% endif %}";
 
     function formatCurrency(value) {
         const numericValue = Number(value || 0);
@@ -358,6 +514,74 @@
         ctx.stroke();
     }
 
+    function getRevenueChartConfig(periodKey) {
+        const period = revenueChartPeriods[periodKey] || revenueChartPeriods.today || { label: 'Today' };
+        const data = revenueChartData[periodKey] || revenueChartData.today || { labels: [], revenue: [] };
+        const labels = data.labels && data.labels.length ? data.labels : ['No data'];
+        const values = data.revenue && data.revenue.length ? data.revenue : [0];
+
+        return {
+            labels,
+            values,
+            title: period.label || 'Revenue',
+        };
+    }
+
+    function renderRevenueChart(periodKey) {
+        const canvas = document.getElementById('revenueChart');
+        if (!canvas || !window.Chart) return;
+
+        const chartConfig = getRevenueChartConfig(periodKey);
+
+        if (revenueChartInstance) {
+            revenueChartInstance.destroy();
+        }
+
+        revenueChartInstance = new Chart(canvas, {
+            type: 'line',
+            data: {
+                labels: chartConfig.labels,
+                datasets: [{
+                    label: chartConfig.title,
+                    data: chartConfig.values,
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.12)',
+                    fill: true,
+                    tension: 0.42,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label(context) {
+                                return `GH₵${Number(context.parsed.y || 0).toFixed(0)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback(value) {
+                                return `GH₵${Number(value || 0).toFixed(0)}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     function resizeSparklines() {
         document.querySelectorAll('.sparkline').forEach((canvas) => {
             const key = canvas.dataset.sparkline;
@@ -373,32 +597,19 @@
         Chart.defaults.color = '#64748b';
         Chart.defaults.borderColor = 'rgba(15, 23, 42, 0.08)';
 
-        new Chart(document.getElementById('revenueChart'), {
-            type: 'line',
-            data: {
-                labels: revenueLabels.length ? revenueLabels : ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00'],
-                datasets: [{
-                    label: 'Revenue',
-                    data: revenueValues.length ? revenueValues : [0, 0, 0, 0, 0, 0, 0, 0],
-                    borderColor: '#2563eb',
-                    backgroundColor: 'rgba(37, 99, 235, 0.12)',
-                    fill: true,
-                    tension: 0.45,
-                    pointRadius: 3,
-                    pointBackgroundColor: '#f59e0b',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: { beginAtZero: true }
-                }
-            }
+        renderRevenueChart(activeRevenuePeriod);
+
+        document.querySelectorAll('[data-analytics-period]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const nextPeriod = button.dataset.analyticsPeriod;
+                activeRevenuePeriod = nextPeriod;
+
+                document.querySelectorAll('[data-analytics-period]').forEach((control) => {
+                    control.classList.toggle('active', control === button);
+                });
+
+                renderRevenueChart(activeRevenuePeriod);
+            });
         });
 
     }

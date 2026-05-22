@@ -265,3 +265,15 @@ class AvatarUploadForm(forms.ModelForm):
             raise ValidationError("Invalid image file. Please upload a valid image.")
         
         return profile_picture
+
+
+class SMSTestForm(forms.Form):
+    recipient_phone = forms.CharField(
+        max_length=20,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Recipient phone number',
+            'type': 'tel',
+        }),
+    )

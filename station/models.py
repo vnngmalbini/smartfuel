@@ -229,10 +229,14 @@ class Payment(models.Model):
     ]
     
     transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE, related_name='payment')
+    customer_name = models.CharField(max_length=200, blank=True, default='')
+    customer_email = models.EmailField(blank=True, default='')
+    customer_phone = models.CharField(max_length=20, blank=True, default='')
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     payment_method = models.CharField(max_length=50)
     reference = models.CharField(max_length=100, unique=True)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    paid_at = models.DateTimeField(null=True, blank=True)
     provider_response = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
